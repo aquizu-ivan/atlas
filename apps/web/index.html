@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ATLAS</title>
+  </head>
+  <body>
+    <div id="app" class="app">
+      <header class="hero">
+        <div class="badge">ATLAS</div>
+        <h1>Connection Monitor</h1>
+        <p class="subtitle">Healthy signal, calm interface, no console noise.</p>
+      </header>
+      <section class="panel">
+        <div class="status">
+          <span class="dot" data-dot></span>
+          <span data-state>Loading</span>
+        </div>
+        <div class="grid">
+          <div class="card">
+            <div class="label">Environment</div>
+            <div class="value" data-env>unknown</div>
+          </div>
+          <div class="card">
+            <div class="label">Started</div>
+            <div class="value" data-started>--</div>
+          </div>
+          <div class="card">
+            <div class="label">Uptime (sec)</div>
+            <div class="value" data-uptime>--</div>
+          </div>
+          <div class="card">
+            <div class="label">DB</div>
+            <div class="value" data-db>--</div>
+          </div>
+        </div>
+      </section>
+      <footer class="footer">
+        <span>API base: <strong data-api>--</strong></span>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
