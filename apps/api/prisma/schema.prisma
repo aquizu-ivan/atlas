@@ -25,6 +25,7 @@ model User {
   createdAt DateTime   @default(now())
   bookings  Booking[]
   loginTokens LoginToken[]
+  sessions Session[]
 }
 
 model Service {
@@ -61,6 +62,20 @@ model LoginToken {
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([expiresAt])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
