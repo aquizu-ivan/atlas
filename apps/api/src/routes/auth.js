@@ -8,6 +8,7 @@ import { ERROR_CODES } from "../errors/errorCodes.js";
 import { badRequest, unauthenticated } from "../errors/httpErrors.js";
 import {
   buildSessionCookieOptions,
+  clearSession,
   createSession,
   readSession,
   SESSION_COOKIE_NAME,
@@ -144,6 +145,38 @@ router.get("/session", async (req, res, next) => {
           email: session.user.email,
           status: session.user.status,
         },
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post("/logout", async (req, res, next) => {
+  if (!prisma) {
+    return next(new AppError(503, ERROR_CODES.INTERNAL_ERROR, "Database not configured", { configured: false }));
+  }
+
+  const cookies = cookie.parse(req.headers.cookie || "");
+  const token = cookies[SESSION_COOKIE_NAME];
+  if (!token) {
+    return next(unauthenticated("Necesitas iniciar sesión."));
+  }
+
+  try {
+    const session = await readSession(prisma, token);
+    if (!session) {
+      return next(unauthenticated("Necesitas iniciar sesión."));
+    }
+
+    await clearSession(prisma, token);
+    const cookieOptions = { ...buildSessionCookieOptions(env, new Date(0)), maxAge: 0 };
+    res.setHeader("Set-Cookie", cookie.serialize(SESSION_COOKIE_NAME, "", cookieOptions));
+
+    return res.status(200).json({
+      ok: true,
+      data: {
+        message: "Sesión cerrada.",
       },
     });
   } catch (error) {

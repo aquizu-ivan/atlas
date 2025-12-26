@@ -7,12 +7,14 @@ function hashToken(token) {
 }
 
 export function buildSessionCookieOptions(env, expiresAt) {
+  const maxAgeSeconds = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
   return {
     httpOnly: true,
     sameSite: "lax",
     secure: env.nodeEnv === "production",
     path: "/",
     expires: expiresAt,
+    maxAge: maxAgeSeconds,
   };
 }
 
