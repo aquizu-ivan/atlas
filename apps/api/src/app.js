@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import { healthHandler } from "./health.js";
-import { AppError } from "./errors/AppError.js";
 import { errorHandler } from "./errors/errorHandler.js";
+import { notFound } from "./errors/httpErrors.js";
 
 const app = express();
 
@@ -12,7 +12,7 @@ app.use(express.json());
 app.get("/api/health", healthHandler);
 
 app.use((req, res, next) => {
-  next(new AppError(404, "NOT_FOUND", "Not found", null));
+  next(notFound("Not found"));
 });
 
 app.use(errorHandler);
