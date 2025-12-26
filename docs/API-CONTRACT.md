@@ -4,8 +4,8 @@
 - Base URL: /api
 - Version: /api
 
-## Error shape único global
-Error shape único global:
+## Error shape unico global
+Error shape unico global:
 ```json
 {
   "ok": false,
@@ -27,8 +27,8 @@ Nota: details puede ser null o cualquier estructura JSON (objeto/array/string/nu
 | GET | /availability?serviceId=...&date=YYYY-MM-DD | Publico | serviceId es interno |
 | POST | /auth/request-link | Publico | body: { email } |
 | GET | /auth/session | Publico | Requiere token/cookie; identidad abstracta |
-| POST | /bookings | Usuario | body: { serviceId, startAt } |
-| GET | /bookings/me | Usuario | Mis reservas |
+| POST | /bookings | Usuario | Requiere sesion; body: { serviceId, startAt } |
+| GET | /bookings/me | Usuario | Requiere sesion; mis reservas |
 | POST | /bookings/:id/cancel | Usuario | id interno; UI no lo expone como dato a completar |
 | POST | /bookings/:id/reschedule | Usuario | body: { startAt } |
 
