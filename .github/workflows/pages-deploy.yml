@@ -1,11 +1,21 @@
-name: CI Smoke
+name: Pages Deploy
 
 on:
-  pull_request:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
-  ci-smoke:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,3 +35,11 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Build web
         run: pnpm -C apps/web run build
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+      - name: Deploy Pages
+        uses: actions/deploy-pages@v4

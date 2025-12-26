@@ -21,3 +21,8 @@ El workflow construye apps/web y publica apps/web/dist en Pages cuando el push e
 - Para request-link, session y logout, el backend debe permitir CORS con credentials desde el origin de Pages.
 - VITE_API_BASE_URL debe apuntar al backend de Railway y no incluir /api.
 - Al abrir el link magico se redirige a /atlas/?auth=success.
+
+## CI vs Deploy
+- CI Smoke corre en PRs y solo valida el build de apps/web.
+- Pages Deploy corre solo en main y publica el sitio.
+- Esto evita bloqueos por "operation canceled" cuando hay concurrencia de Pages.
