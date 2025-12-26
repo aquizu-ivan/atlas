@@ -12,7 +12,7 @@ export function healthHandler(req, res) {
     uptimeSec: Math.floor(process.uptime()),
     expected: {
       apiBase: env.apiBase,
-      webBaseUrl: env.webBaseUrl,
+      webBaseUrl: env.webBaseUrl || null,
     },
     db: {
       configured: urlPresent,

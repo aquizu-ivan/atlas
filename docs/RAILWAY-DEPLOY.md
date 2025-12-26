@@ -27,3 +27,5 @@ corepack enable && corepack prepare pnpm@9.15.4 --activate && corepack pnpm run 
 - AUTH_DEV_LINKS=false
 - AUTH_SESSION_TTL_DAYS=7
 - AUTH_TOKEN_TTL_MINUTES=15
+
+Nota: PUBLIC_BASE_URL y AUTH_REDIRECT_BASE_URL deben estar definidos en production para generar links y redirects correctos.
