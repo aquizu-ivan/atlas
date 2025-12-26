@@ -17,3 +17,11 @@ corepack enable && corepack prepare pnpm@9.15.4 --activate && corepack pnpm run 
 ## Scripts de root
 - railway:build ejecuta db:generate del backend con workspace filter.
 - railway:start inicia el backend con workspace filter.
+
+## Variables de entorno en Railway
+- NODE_ENV=production
+- DATABASE_URL=DATABASE_URL_AQUI
+- CORS_ORIGIN=https://aquizu-ivan.github.io,http://localhost:5173
+- PUBLIC_BASE_URL=https://atlas-atlas.up.railway.app
+- AUTH_SESSION_TTL_DAYS=7
+- AUTH_TOKEN_TTL_MINUTES=15

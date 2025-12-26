@@ -8,10 +8,11 @@ function hashToken(token) {
 
 export function buildSessionCookieOptions(env, expiresAt) {
   const maxAgeSeconds = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+  const isProduction = env.nodeEnv === "production";
   return {
     httpOnly: true,
-    sameSite: "lax",
-    secure: env.nodeEnv === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
     path: "/",
     expires: expiresAt,
     maxAge: maxAgeSeconds,

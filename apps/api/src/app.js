@@ -9,6 +9,10 @@ import { authRouter } from "./routes/auth.js";
 
 const app = express();
 
+if (env.nodeEnv === "production") {
+  app.set("trust proxy", 1);
+}
+
 const rawCorsOrigin = env.corsOrigin.trim();
 const defaultOrigins = [
   "https://aquizu-ivan.github.io",
