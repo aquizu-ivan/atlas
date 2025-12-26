@@ -7,7 +7,9 @@
     "smoke:pnpm": "pnpm -v",
     "smoke": "pnpm run smoke:node && pnpm run smoke:pnpm",
     "ci:smoke": "pnpm run smoke && pnpm -r -w exec -- node -e \"console.log('workspace ok')\"",
-    "repo:tree": "node scripts/repo-tree.cjs"
+    "repo:tree": "node scripts/repo-tree.cjs",
+    "railway:build": "corepack pnpm --filter @atlas/api run db:generate",
+    "railway:start": "corepack pnpm --filter @atlas/api run start"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
