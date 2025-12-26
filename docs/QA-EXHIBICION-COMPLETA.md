@@ -31,3 +31,21 @@ Secuencia de verificacion en local, en orden canonico:
 - En Pages, la URL debe ser https://aquizu-ivan.github.io/atlas/.
 - Verificar que los assets cargan desde /atlas/assets/... y no desde /assets/ absoluto.
 - Verificar que las llamadas a API usan VITE_API_BASE_URL y no rutas relativas rotas.
+
+## QA Produccion (Pages -> Railway)
+1) Abrir https://aquizu-ivan.github.io/atlas/ y confirmar Health Online.
+2) En Auth, usar request-link con email demo (en prod puede no devolver devLink).
+3) Si hay devLink, usar "Consumir link" y luego "Refrescar" para ver Sesion activa.
+4) Logout y luego "Refrescar" debe mostrar "Necesitas iniciar sesion".
+5) DevTools -> Application -> Cookies:
+   - Debe existir atlas_session con Secure=true y SameSite=None.
+
+## QA con curl (CORS)
+Health con Origin:
+- curl -i -H "Origin: https://aquizu-ivan.github.io" https://atlas-atlas.up.railway.app/api/health
+Session con Origin (sin cookie):
+- curl -i -H "Origin: https://aquizu-ivan.github.io" https://atlas-atlas.up.railway.app/api/auth/session
+Preflight:
+- curl -i -X OPTIONS -H "Origin: https://aquizu-ivan.github.io" -H "Access-Control-Request-Method: POST" https://atlas-atlas.up.railway.app/api/auth/logout
+Session con cookie (manual):
+- curl -i -H "Origin: https://aquizu-ivan.github.io" -H "Cookie: atlas_session=ATLAS_SESSION_AQUI" https://atlas-atlas.up.railway.app/api/auth/session
