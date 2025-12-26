@@ -17,6 +17,7 @@ const authDevLinks = rawAuthDevLinks === undefined || rawAuthDevLinks === ""
 const publicBaseUrl = (process.env.PUBLIC_BASE_URL || "http://localhost:4000").replace(/\/$/, "");
 const parsedSessionDays = Number.parseInt(process.env.AUTH_SESSION_TTL_DAYS ?? "", 10);
 const authSessionTtlDays = Number.isFinite(parsedSessionDays) && parsedSessionDays > 0 ? parsedSessionDays : 7;
+const corsOrigin = process.env.CORS_ORIGIN || "";
 const startedAt = new Date().toISOString();
 
 export const env = {
@@ -29,5 +30,6 @@ export const env = {
   authDevLinks,
   publicBaseUrl,
   authSessionTtlDays,
+  corsOrigin,
   startedAt,
 };
