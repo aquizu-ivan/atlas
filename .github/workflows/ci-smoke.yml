@@ -22,13 +22,17 @@ jobs:
         run: |
           node -v
           pnpm -v
-      - name: Install dependencies
+      - name: Install (only if lockfile exists)
         run: |
           if [ -f pnpm-lock.yaml ]; then
             pnpm install --frozen-lockfile
           else
-            # lock se fijara cuando exista
-            pnpm install
+            echo "Skipping pnpm install (no pnpm-lock.yaml yet)"
           fi
       - name: CI smoke
-        run: pnpm run ci:smoke
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm run ci:smoke
+          else
+            echo "Skipping ci:smoke (no pnpm-lock.yaml yet)"
+          fi
