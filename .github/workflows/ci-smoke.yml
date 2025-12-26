@@ -4,6 +4,15 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
@@ -17,22 +26,26 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
+          node-version: "22.x"
+          cache: "pnpm"
       - name: Smoke versions
         run: |
           node -v
           pnpm -v
-      - name: Install (only if lockfile exists)
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm install --frozen-lockfile
-          else
-            echo "Skipping pnpm install (no pnpm-lock.yaml yet)"
-          fi
-      - name: CI smoke
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm run ci:smoke
-          else
-            echo "Skipping ci:smoke (no pnpm-lock.yaml yet)"
-          fi
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build web
+        run: pnpm -C apps/web run build
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+      - name: Configure Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/configure-pages@v4
+      - name: Upload Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+      - name: Deploy Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/deploy-pages@v4
