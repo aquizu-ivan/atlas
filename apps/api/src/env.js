@@ -8,6 +8,13 @@ const nodeEnv = allowed.has(rawNodeEnv) ? rawNodeEnv : "unknown";
 const parsedPort = Number.parseInt(process.env.PORT ?? "", 10);
 const port = Number.isFinite(parsedPort) && parsedPort > 0 ? parsedPort : 4000;
 const databaseUrl = process.env.DATABASE_URL || "";
+const parsedTtl = Number.parseInt(process.env.AUTH_TOKEN_TTL_MINUTES ?? "", 10);
+const authTokenTtlMinutes = Number.isFinite(parsedTtl) && parsedTtl > 0 ? parsedTtl : 15;
+const rawAuthDevLinks = process.env.AUTH_DEV_LINKS;
+const authDevLinks = rawAuthDevLinks === undefined || rawAuthDevLinks === ""
+  ? nodeEnv === "development" || nodeEnv === "test"
+  : ["1", "true", "yes"].includes(String(rawAuthDevLinks).toLowerCase());
+const publicBaseUrl = (process.env.PUBLIC_BASE_URL || "http://localhost:4000").replace(/\/$/, "");
 const startedAt = new Date().toISOString();
 
 export const env = {
@@ -16,5 +23,8 @@ export const env = {
   apiBase: "/api",
   webBaseUrl: null,
   databaseUrl,
+  authTokenTtlMinutes,
+  authDevLinks,
+  publicBaseUrl,
   startedAt,
 };
