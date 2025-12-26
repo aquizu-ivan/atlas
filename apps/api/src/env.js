@@ -15,6 +15,10 @@ const authDevLinks = rawAuthDevLinks === undefined || rawAuthDevLinks === ""
   ? nodeEnv === "development" || nodeEnv === "test"
   : ["1", "true", "yes"].includes(String(rawAuthDevLinks).toLowerCase());
 const publicBaseUrl = (process.env.PUBLIC_BASE_URL || "http://localhost:4000").replace(/\/$/, "");
+const authRedirectBaseUrl = (process.env.AUTH_REDIRECT_BASE_URL
+  || (nodeEnv === "production"
+    ? "https://aquizu-ivan.github.io/atlas"
+    : "http://localhost:5173")).replace(/\/$/, "");
 const parsedSessionDays = Number.parseInt(process.env.AUTH_SESSION_TTL_DAYS ?? "", 10);
 const authSessionTtlDays = Number.isFinite(parsedSessionDays) && parsedSessionDays > 0 ? parsedSessionDays : 7;
 const corsOrigin = process.env.CORS_ORIGIN || "";
@@ -29,6 +33,7 @@ export const env = {
   authTokenTtlMinutes,
   authDevLinks,
   publicBaseUrl,
+  authRedirectBaseUrl,
   authSessionTtlDays,
   corsOrigin,
   startedAt,

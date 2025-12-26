@@ -20,3 +20,4 @@ El workflow construye apps/web y publica apps/web/dist en Pages cuando el push e
 ## Nota sobre Auth en Pages
 - Para request-link, session y logout, el backend debe permitir CORS con credentials desde el origin de Pages.
 - VITE_API_BASE_URL debe apuntar al backend de Railway y no incluir /api.
+- Al abrir el link magico se redirige a /atlas/?auth=success.

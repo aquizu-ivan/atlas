@@ -20,6 +20,15 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function wantsHtml(req) {
+  const accept = req.headers.accept || "";
+  return accept.includes("text/html");
+}
+
+function redirectUrl(status) {
+  return `${env.authRedirectBaseUrl}/?auth=${status}`;
+}
+
 router.post("/request-link", async (req, res, next) => {
   if (!prisma) {
     return next(new AppError(503, ERROR_CODES.INTERNAL_ERROR, "Database not configured", { configured: false }));
@@ -52,11 +61,15 @@ router.post("/request-link", async (req, res, next) => {
       select: { id: true },
     });
 
+    const devLink = `${env.publicBaseUrl}/api/auth/consume?token=${token}`;
     const data = {
       message: "Te enviamos un link para entrar.",
     };
-    if (env.authDevLinks) {
-      data.devLink = `${env.publicBaseUrl}/api/auth/consume?token=${token}`;
+
+    if (env.authDevLinks && env.nodeEnv !== "production") {
+      data.devLink = devLink;
+    } else if (env.authDevLinks && env.nodeEnv === "production") {
+      console.log(`AUTH_DEV_LINK ${devLink}`);
     }
 
     return res.status(200).json({
@@ -69,17 +82,24 @@ router.post("/request-link", async (req, res, next) => {
 });
 
 router.get("/consume", async (req, res, next) => {
+  const html = wantsHtml(req);
   if (!prisma) {
+    if (html) {
+      return res.redirect(302, redirectUrl("error"));
+    }
     return next(new AppError(503, ERROR_CODES.INTERNAL_ERROR, "Database not configured", { configured: false }));
   }
 
   const rawToken = req.query?.token;
   const token = typeof rawToken === "string" ? rawToken : "";
   if (!token) {
+    if (html) {
+      return res.redirect(302, redirectUrl("error"));
+    }
     return next(badRequest("Invalid token", { token: rawToken }));
   }
 
-  const invalidMessage = "El link expiró o es inválido.";
+  const invalidMessage = "El link expiro o es invalido.";
 
   try {
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
@@ -89,6 +109,9 @@ router.get("/consume", async (req, res, next) => {
     });
 
     if (!loginToken) {
+      if (html) {
+        return res.redirect(302, redirectUrl("error"));
+      }
       return next(unauthenticated(invalidMessage));
     }
 
@@ -103,6 +126,9 @@ router.get("/consume", async (req, res, next) => {
     });
 
     if (updated.count === 0) {
+      if (html) {
+        return res.redirect(302, redirectUrl("error"));
+      }
       return next(unauthenticated(invalidMessage));
     }
 
@@ -110,10 +136,14 @@ router.get("/consume", async (req, res, next) => {
     const cookieOptions = buildSessionCookieOptions(env, session.expiresAt);
     res.setHeader("Set-Cookie", cookie.serialize(SESSION_COOKIE_NAME, session.token, cookieOptions));
 
+    if (html) {
+      return res.redirect(302, redirectUrl("success"));
+    }
+
     return res.status(200).json({
       ok: true,
       data: {
-        message: "Sesión activa.",
+        message: "Sesion activa.",
       },
     });
   } catch (error) {
@@ -129,13 +159,13 @@ router.get("/session", async (req, res, next) => {
   const cookies = cookie.parse(req.headers.cookie || "");
   const token = cookies[SESSION_COOKIE_NAME];
   if (!token) {
-    return next(unauthenticated("Necesitas iniciar sesión."));
+    return next(unauthenticated("Necesitas iniciar sesion."));
   }
 
   try {
     const session = await readSession(prisma, token);
     if (!session) {
-      return next(unauthenticated("Necesitas iniciar sesión."));
+      return next(unauthenticated("Necesitas iniciar sesion."));
     }
 
     return res.status(200).json({
@@ -160,13 +190,13 @@ router.post("/logout", async (req, res, next) => {
   const cookies = cookie.parse(req.headers.cookie || "");
   const token = cookies[SESSION_COOKIE_NAME];
   if (!token) {
-    return next(unauthenticated("Necesitas iniciar sesión."));
+    return next(unauthenticated("Necesitas iniciar sesion."));
   }
 
   try {
     const session = await readSession(prisma, token);
     if (!session) {
-      return next(unauthenticated("Necesitas iniciar sesión."));
+      return next(unauthenticated("Necesitas iniciar sesion."));
     }
 
     await clearSession(prisma, token);
@@ -176,7 +206,7 @@ router.post("/logout", async (req, res, next) => {
     return res.status(200).json({
       ok: true,
       data: {
-        message: "Sesión cerrada.",
+        message: "Sesion cerrada.",
       },
     });
   } catch (error) {

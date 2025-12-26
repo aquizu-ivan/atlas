@@ -17,10 +17,12 @@ const authRequestBtn = document.querySelector("[data-auth-request]");
 const authMessageEl = document.querySelector("[data-auth-message]");
 const authStatusEl = document.querySelector("[data-auth-status]");
 const authUserEl = document.querySelector("[data-auth-user]");
-const authDevEl = document.querySelector("[data-auth-dev]");
+const authHelperEl = document.querySelector("[data-auth-helper]");
+const authHelperExtraEl = document.querySelector("[data-auth-helper-extra]");
 const authConsumeBtn = document.querySelector("[data-auth-consume]");
 const authRefreshBtn = document.querySelector("[data-auth-refresh]");
 const authLogoutBtn = document.querySelector("[data-auth-logout]");
+const isProduction = import.meta.env.MODE === "production";
 
 function normalizeBase(value) {
   if (!value) return "";
@@ -63,9 +65,22 @@ function setSessionState(isActive, email) {
   authUserEl.textContent = isActive && email ? email : "--";
 }
 
-function setDevLinkState(label, enabled) {
-  authDevEl.textContent = label;
+function setHelperMessage(message) {
+  authHelperEl.textContent = message;
+}
+
+function setDevLinkState(enabled) {
+  if (isProduction) {
+    authConsumeBtn.hidden = true;
+    authHelperExtraEl.textContent = "";
+    authHelperExtraEl.style.display = "none";
+    return;
+  }
+
+  authConsumeBtn.hidden = false;
   authConsumeBtn.disabled = !enabled;
+  authHelperExtraEl.textContent = enabled ? "Dev link listo." : "Solo en dev/test.";
+  authHelperExtraEl.style.display = "block";
 }
 
 async function loadHealth() {
@@ -134,13 +149,14 @@ async function requestLink() {
       return;
     }
 
-    setAuthMessage(data.data?.message || "Link enviado");
+    setAuthMessage("Revisa tu email y abre el link para iniciar sesion.");
+    setHelperMessage("El link llega por email. Abrelo para iniciar sesion.");
     if (data.data?.devLink) {
       devLink = data.data.devLink;
-      setDevLinkState("Ready", true);
+      setDevLinkState(true);
     } else {
       devLink = null;
-      setDevLinkState("Not available", false);
+      setDevLinkState(false);
     }
   } catch {
     setAuthMessage("Error de red");
@@ -170,12 +186,14 @@ async function consumeDevLink() {
 
     setAuthMessage(data.data?.message || "Sesion activa");
     devLink = null;
-    setDevLinkState("Used", false);
+    setDevLinkState(false);
     await refreshSession();
   } catch {
     setAuthMessage("Error de red");
   } finally {
-    authConsumeBtn.disabled = !devLink;
+    if (!isProduction) {
+      authConsumeBtn.disabled = !devLink;
+    }
   }
 }
 
@@ -247,5 +265,34 @@ authConsumeBtn.addEventListener("click", consumeDevLink);
 authRefreshBtn.addEventListener("click", refreshSession);
 authLogoutBtn.addEventListener("click", logout);
 
+function handleAuthQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const auth = params.get("auth");
+  if (!auth) {
+    return null;
+  }
+
+  if (auth === "success") {
+    setAuthMessage("Sesion activa");
+    setHelperMessage("Ya puedes usar tu sesion.");
+  } else if (auth === "error") {
+    setAuthMessage("No pudimos iniciar sesion.");
+    setHelperMessage("El link puede estar expirado o invalido.");
+    setSessionState(false, null);
+  }
+
+  params.delete("auth");
+  const query = params.toString();
+  const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+  window.history.replaceState({}, "", nextUrl);
+  return auth;
+}
+
+setHelperMessage("Usa tu email para recibir un link.");
+setDevLinkState(false);
+
+const authQuery = handleAuthQuery();
 loadHealth();
-refreshSession();
+if (authQuery === "success" || !authQuery) {
+  refreshSession();
+}

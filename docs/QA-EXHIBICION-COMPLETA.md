@@ -35,7 +35,7 @@ Secuencia de verificacion en local, en orden canonico:
 ## QA Produccion (Pages -> Railway)
 1) Abrir https://aquizu-ivan.github.io/atlas/ y confirmar Health Online.
 2) En Auth, usar request-link con email demo (en prod puede no devolver devLink).
-3) Si hay devLink, usar "Consumir link" y luego "Refrescar" para ver Sesion activa.
+3) Abrir el link recibido en email y verificar redirect a /atlas/?auth=success.
 4) Logout y luego "Refrescar" debe mostrar "Necesitas iniciar sesion".
 5) DevTools -> Application -> Cookies:
    - Debe existir atlas_session con Secure=true y SameSite=None.
