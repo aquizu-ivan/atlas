@@ -45,6 +45,7 @@ export async function readSession(prisma, token) {
       expiresAt: { gt: new Date() },
     },
     select: {
+      userId: true,
       expiresAt: true,
       user: {
         select: {

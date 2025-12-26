@@ -1,6 +1,6 @@
 # QA Concurrency Demo
 
-Objetivo: demostrar 1x201 y N-1x409 al crear bookings concurrentes.
+Objetivo: demostrar 1x201 y N-1x409 al crear bookings concurrentes con sesion valida.
 
 ## Pasos reproducibles
 1) Configurar DATABASE_URL:
@@ -12,16 +12,20 @@ Objetivo: demostrar 1x201 y N-1x409 al crear bookings concurrentes.
    - pnpm -C apps/api run db:generate
 4) Crear shape en DB limpia:
    - pnpm -C apps/api run db:push
-5) Sembrar datos demo (copiar ids):
+5) Sembrar datos demo (copiar serviceId y startAt):
    - pnpm -C apps/api run db:seed
 6) Levantar API (otra terminal):
    - pnpm -C apps/api run dev
-7) Exportar ids:
-   - set USER_ID=TOKEN_USER_ID
+7) Solicitar magic link (dev):
+   - POST http://localhost:4000/api/auth/request-link con { "email": "demo@atlas.local" }
+8) Abrir el devLink y capturar la cookie atlas_session:
+   - GET http://localhost:4000/api/auth/consume?token=TOKEN_AQUI
+9) Exportar variables para QA:
    - set SERVICE_ID=TOKEN_SERVICE_ID
-   - set N=10
+   - set ATLAS_SESSION=TOKEN_SESSION
    - (opcional) set START_AT=2025-01-10T10:00:00Z
-8) Ejecutar prueba de concurrencia:
+   - set N=10
+10) Ejecutar prueba de concurrencia:
    - pnpm -C apps/api run qa:concurrency
 
 ## Output esperado (resumen)
