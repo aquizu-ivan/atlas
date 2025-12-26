@@ -36,6 +36,34 @@
           </div>
         </div>
       </section>
+      <section class="panel">
+        <div class="panel-title">Auth</div>
+        <div class="auth-grid">
+          <div class="card">
+            <div class="label">Email</div>
+            <div class="auth-row">
+              <input class="field" type="email" placeholder="demo@atlas.local" data-auth-email />
+              <button class="button" type="button" data-auth-request>Enviar link</button>
+            </div>
+            <div class="note" data-auth-message>--</div>
+          </div>
+          <div class="card">
+            <div class="label">Sesion</div>
+            <div class="value" data-auth-status>Offline</div>
+            <div class="note" data-auth-user>--</div>
+            <div class="button-row">
+              <button class="button ghost" type="button" data-auth-refresh>Refrescar</button>
+              <button class="button ghost" type="button" data-auth-logout>Logout</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="label">Dev link</div>
+            <div class="value" data-auth-dev>Not available</div>
+            <button class="button ghost" type="button" data-auth-consume disabled>Consumir link</button>
+            <div class="note">Solo en dev/test.</div>
+          </div>
+        </div>
+      </section>
       <footer class="footer">
         <span>Health URL: <strong data-api>--</strong></span>
       </footer>
