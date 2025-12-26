@@ -1,0 +1,9 @@
+{
+  "name": "@atlas/api",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "smoke": "node -e \"console.log('api package ok')\""
+  }
+}
