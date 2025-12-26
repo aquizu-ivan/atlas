@@ -4,6 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "smoke": "node -e \"console.log('api package ok')\""
+    "smoke": "node -e \"console.log('api package ok')\"",
+    "prisma:validate": "pnpm exec -- prisma validate",
+    "prisma:format": "pnpm exec -- prisma format",
+    "db:generate": "pnpm exec -- prisma generate",
+    "db:push": "pnpm exec -- prisma db push"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.0.0"
   }
 }
