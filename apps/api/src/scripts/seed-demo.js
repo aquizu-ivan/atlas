@@ -6,14 +6,6 @@ async function main() {
     process.exit(1);
   }
 
-  const email = "demo@atlas.local";
-  const user = await prisma.user.upsert({
-    where: { email },
-    update: {},
-    create: { email },
-    select: { id: true },
-  });
-
   let service = await prisma.service.findFirst({
     where: { name: "Demo Service" },
     select: { id: true },
@@ -26,7 +18,17 @@ async function main() {
     });
   }
 
-  console.log(JSON.stringify({ userId: user.id, serviceId: service.id }));
+  const date = new Date(Date.now() + 60000);
+  date.setMilliseconds(0);
+  const startAt = date.toISOString();
+
+  console.log(`serviceId=${service.id}`);
+  console.log(`startAt=${startAt}`);
+  console.log("QA:");
+  console.log("1) POST /api/auth/request-link con email valido (dev).");
+  console.log("2) Abrir el devLink de /api/auth/consume y capturar la cookie atlas_session.");
+  console.log("3) POST /api/bookings con serviceId y startAt usando la cookie.");
+  console.log("4) set ATLAS_SESSION=TOKEN_AQUI y ejecutar: pnpm -C apps/api run qa:concurrency");
 }
 
 main()

@@ -1,11 +1,16 @@
 const apiBaseUrl = (process.env.API_BASE_URL || "http://localhost:4000").replace(/\/$/, "");
-const userId = process.env.USER_ID;
 const serviceId = process.env.SERVICE_ID;
+const sessionToken = process.env.ATLAS_SESSION;
 const rawStartAt = process.env.START_AT;
 const rawN = process.env.N;
 
-if (!userId || !serviceId) {
-  console.error("USER_ID and SERVICE_ID are required");
+if (!serviceId) {
+  console.error("SERVICE_ID is required");
+  process.exit(1);
+}
+
+if (!sessionToken) {
+  console.error("ATLAS_SESSION is required");
   process.exit(1);
 }
 
@@ -27,14 +32,18 @@ if (!startAt) {
   startAt = parsed.toISOString();
 }
 
-const payload = { userId, serviceId, startAt };
+const payload = { serviceId, startAt };
 const url = `${apiBaseUrl}/api/bookings`;
+const cookieHeader = `atlas_session=${sessionToken}`;
 
 async function run() {
   const requests = Array.from({ length: total }, () => {
     return fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cookie": cookieHeader,
+      },
       body: JSON.stringify(payload),
     })
       .then((res) => res.status)
