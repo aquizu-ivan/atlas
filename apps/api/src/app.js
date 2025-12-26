@@ -10,15 +10,14 @@ import { authRouter } from "./routes/auth.js";
 const app = express();
 
 const rawCorsOrigin = env.corsOrigin.trim();
-let allowedOrigins = [];
-
-if (rawCorsOrigin) {
-  allowedOrigins = rawCorsOrigin.split(",").map((origin) => origin.trim()).filter(Boolean);
-} else if (env.nodeEnv === "development" || env.nodeEnv === "test") {
-  allowedOrigins = ["http://localhost:5173", "http://localhost:3000"];
-} else if (env.nodeEnv === "production") {
-  throw new Error("CORS_ORIGIN is required in production");
-}
+const defaultOrigins = [
+  "https://aquizu-ivan.github.io",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+const allowedOrigins = rawCorsOrigin
+  ? rawCorsOrigin.split(",").map((origin) => origin.trim()).filter(Boolean)
+  : defaultOrigins;
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -28,10 +27,19 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    return callback(new Error("CORS origin not allowed"));
+    return callback(null, false);
   },
   credentials: true,
 }));
+app.use((req, res, next) => {
+  const existing = res.getHeader("Vary");
+  if (!existing) {
+    res.setHeader("Vary", "Origin");
+  } else if (!String(existing).toLowerCase().includes("origin")) {
+    res.setHeader("Vary", `${existing}, Origin`);
+  }
+  next();
+});
 app.use(express.json());
 
 app.get("/api/health", healthHandler);
