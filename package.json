@@ -8,5 +8,11 @@
     "smoke": "pnpm run smoke:node && pnpm run smoke:pnpm",
     "ci:smoke": "pnpm run smoke && pnpm -r -w exec -- node -e \"console.log('workspace ok')\"",
     "repo:tree": "node scripts/repo-tree.cjs"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "prisma",
+      "@prisma/client"
+    ]
   }
 }

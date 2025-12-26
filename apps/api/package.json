@@ -13,7 +13,8 @@
     "db:generate": "pnpm exec -- prisma generate",
     "db:push": "pnpm exec -- prisma db push",
     "db:seed": "node src/scripts/seed-demo.js",
-    "qa:concurrency": "node src/scripts/concurrency-test.js"
+    "qa:concurrency": "node src/scripts/concurrency-test.js",
+    "qa:tooling": "node src/scripts/tooling-smoke.js"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",
