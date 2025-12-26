@@ -50,3 +50,20 @@ Preflight:
 - curl -i -X OPTIONS -H "Origin: https://aquizu-ivan.github.io" -H "Access-Control-Request-Method: POST" https://atlas-atlas.up.railway.app/api/auth/logout
 Session con cookie (manual):
 - curl -i -H "Origin: https://aquizu-ivan.github.io" -H "Cookie: atlas_session=ATLAS_SESSION_AQUI" https://atlas-atlas.up.railway.app/api/auth/session
+
+## QA Tecnico (script reproducible)
+Script sin dependencias externas:
+- pnpm run qa:exhibicion
+
+Con argumentos:
+- pnpm run qa:exhibicion -- --pages=https://aquizu-ivan.github.io/atlas/ --api=https://atlas-atlas.up.railway.app
+
+Evidencia esperada:
+- health: status 200 y ok:true
+- session-origin: status 200 o 401, nunca 500, con Access-Control-Allow-Origin y Access-Control-Allow-Credentials
+- preflight: status 200/204/401 con headers CORS
+- invalid-origin: status 200 sin Access-Control-Allow-Origin
+
+Nota:
+- No se exponen tokens ni cookies completas.
+- En prod no hay devLink; el flujo real requiere el link enviado por email.
