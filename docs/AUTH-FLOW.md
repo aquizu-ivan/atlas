@@ -10,7 +10,7 @@
 ## Produccion vs dev
 - En production no se devuelve devLink en la respuesta.
 - En dev/test se puede devolver devLink para QA rapida.
-- Si se activa un modo demo en production (AUTH_DEV_LINKS=true), el link solo aparece en logs del servidor.
+- En production AUTH_DEV_LINKS debe estar en false.
 
 ## Variables esperadas
 - PUBLIC_BASE_URL=https://atlas-atlas.up.railway.app
@@ -18,6 +18,7 @@
 - AUTH_DEV_LINKS=false
 - AUTH_SESSION_TTL_DAYS=7
 - AUTH_TOKEN_TTL_MINUTES=15
+Si PUBLIC_BASE_URL falta en production, el backend solo usa el host del request si es https; de lo contrario responde error.
 
 ## QA reproducible
 Dev:
@@ -28,7 +29,8 @@ Dev:
 Prod:
 1) En Pages, pedir link con email demo
 2) Abrir el link recibido en email
-3) Confirmar redirect a /atlas/?auth=success y sesion Online
-4) Logout y luego session Offline
+3) Confirmar redirect a /atlas/?auth=success
+4) Refrescar sesion y ver Online con email
+5) Logout y luego session Offline
 
 Nota: nunca se expone token ni link magico en UI en production.

@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { normalizeBaseUrl } from "./utils/url.js";
 
 dotenv.config();
 
@@ -14,11 +15,12 @@ const rawAuthDevLinks = process.env.AUTH_DEV_LINKS;
 const authDevLinks = rawAuthDevLinks === undefined || rawAuthDevLinks === ""
   ? nodeEnv === "development" || nodeEnv === "test"
   : ["1", "true", "yes"].includes(String(rawAuthDevLinks).toLowerCase());
-const publicBaseUrl = (process.env.PUBLIC_BASE_URL || "http://localhost:4000").replace(/\/$/, "");
-const authRedirectBaseUrl = (process.env.AUTH_REDIRECT_BASE_URL
-  || (nodeEnv === "production"
-    ? "https://aquizu-ivan.github.io/atlas"
-    : "http://localhost:5173")).replace(/\/$/, "");
+const rawPublicBaseUrl = process.env.PUBLIC_BASE_URL;
+const defaultPublicBaseUrl = nodeEnv === "production" ? "" : "http://localhost:4000";
+const publicBaseUrl = normalizeBaseUrl(rawPublicBaseUrl || defaultPublicBaseUrl);
+const rawRedirectBaseUrl = process.env.AUTH_REDIRECT_BASE_URL;
+const defaultRedirectBaseUrl = nodeEnv === "production" ? "" : "http://localhost:5173";
+const authRedirectBaseUrl = normalizeBaseUrl(rawRedirectBaseUrl || defaultRedirectBaseUrl);
 const parsedSessionDays = Number.parseInt(process.env.AUTH_SESSION_TTL_DAYS ?? "", 10);
 const authSessionTtlDays = Number.isFinite(parsedSessionDays) && parsedSessionDays > 0 ? parsedSessionDays : 7;
 const corsOrigin = process.env.CORS_ORIGIN || "";
@@ -28,7 +30,7 @@ export const env = {
   nodeEnv,
   port,
   apiBase: "/api",
-  webBaseUrl: null,
+  webBaseUrl: authRedirectBaseUrl || null,
   databaseUrl,
   authTokenTtlMinutes,
   authDevLinks,

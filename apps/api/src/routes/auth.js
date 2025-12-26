@@ -6,6 +6,7 @@ import { env } from "../env.js";
 import { AppError } from "../errors/AppError.js";
 import { ERROR_CODES } from "../errors/errorCodes.js";
 import { badRequest, unauthenticated } from "../errors/httpErrors.js";
+import { joinUrl, normalizeBaseUrl } from "../utils/url.js";
 import {
   buildSessionCookieOptions,
   clearSession,
@@ -25,8 +26,28 @@ function wantsHtml(req) {
   return accept.includes("text/html");
 }
 
+function resolvePublicBaseUrl(req) {
+  if (env.publicBaseUrl) {
+    return env.publicBaseUrl;
+  }
+  if (env.nodeEnv !== "production") {
+    return env.publicBaseUrl;
+  }
+  const protocol = req.protocol;
+  const host = req.get("host");
+  if (protocol === "https" && host) {
+    return normalizeBaseUrl(`${protocol}://${host}`);
+  }
+  return "";
+}
+
+function resolveRedirectBaseUrl() {
+  return env.authRedirectBaseUrl || "";
+}
+
 function redirectUrl(status) {
-  return `${env.authRedirectBaseUrl}/?auth=${status}`;
+  const base = resolveRedirectBaseUrl();
+  return joinUrl(base, `/?auth=${status}`);
 }
 
 router.post("/request-link", async (req, res, next) => {
@@ -61,15 +82,18 @@ router.post("/request-link", async (req, res, next) => {
       select: { id: true },
     });
 
-    const devLink = `${env.publicBaseUrl}/api/auth/consume?token=${token}`;
+    const publicBaseUrl = resolvePublicBaseUrl(req);
+    if (!publicBaseUrl) {
+      return next(new AppError(500, ERROR_CODES.INTERNAL_ERROR, "PUBLIC_BASE_URL is required in production"));
+    }
+    const consumeUrl = joinUrl(publicBaseUrl, "/api/auth/consume");
+    const devLink = `${consumeUrl}?token=${token}`;
     const data = {
       message: "Te enviamos un link para entrar.",
     };
 
     if (env.authDevLinks && env.nodeEnv !== "production") {
       data.devLink = devLink;
-    } else if (env.authDevLinks && env.nodeEnv === "production") {
-      console.log(`AUTH_DEV_LINK ${devLink}`);
     }
 
     return res.status(200).json({
@@ -83,9 +107,15 @@ router.post("/request-link", async (req, res, next) => {
 
 router.get("/consume", async (req, res, next) => {
   const html = wantsHtml(req);
+  const redirectBase = resolveRedirectBaseUrl();
+  if (html && env.nodeEnv === "production" && !redirectBase) {
+    return next(new AppError(500, ERROR_CODES.INTERNAL_ERROR, "AUTH_REDIRECT_BASE_URL is required in production"));
+  }
   if (!prisma) {
     if (html) {
-      return res.redirect(302, redirectUrl("error"));
+      if (redirectBase) {
+        return res.redirect(302, redirectUrl("error"));
+      }
     }
     return next(new AppError(503, ERROR_CODES.INTERNAL_ERROR, "Database not configured", { configured: false }));
   }
@@ -94,7 +124,9 @@ router.get("/consume", async (req, res, next) => {
   const token = typeof rawToken === "string" ? rawToken : "";
   if (!token) {
     if (html) {
-      return res.redirect(302, redirectUrl("error"));
+      if (redirectBase) {
+        return res.redirect(302, redirectUrl("error"));
+      }
     }
     return next(badRequest("Invalid token", { token: rawToken }));
   }
@@ -110,7 +142,9 @@ router.get("/consume", async (req, res, next) => {
 
     if (!loginToken) {
       if (html) {
-        return res.redirect(302, redirectUrl("error"));
+        if (redirectBase) {
+          return res.redirect(302, redirectUrl("error"));
+        }
       }
       return next(unauthenticated(invalidMessage));
     }
@@ -127,7 +161,9 @@ router.get("/consume", async (req, res, next) => {
 
     if (updated.count === 0) {
       if (html) {
-        return res.redirect(302, redirectUrl("error"));
+        if (redirectBase) {
+          return res.redirect(302, redirectUrl("error"));
+        }
       }
       return next(unauthenticated(invalidMessage));
     }
@@ -137,7 +173,9 @@ router.get("/consume", async (req, res, next) => {
     res.setHeader("Set-Cookie", cookie.serialize(SESSION_COOKIE_NAME, session.token, cookieOptions));
 
     if (html) {
-      return res.redirect(302, redirectUrl("success"));
+      if (redirectBase) {
+        return res.redirect(302, redirectUrl("success"));
+      }
     }
 
     return res.status(200).json({
