@@ -42,6 +42,7 @@ Precondicion: AUTH_DEV_LINKS=true para mostrar acceso DEV en UI.
 5) Logout y luego "Refrescar" debe mostrar "Necesitas iniciar sesion".
 6) DevTools -> Application -> Cookies:
    - Debe existir atlas_session con Secure=true y SameSite=None.
+   - La cookie es HttpOnly y no debe ser visible en JS.
 
 ## Booking Flow (Web)
 1) Health online en Pages.
