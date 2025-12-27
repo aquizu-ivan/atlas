@@ -18,8 +18,10 @@ const authMessageEl = document.querySelector("[data-auth-message]");
 const authStatusEl = document.querySelector("[data-auth-status]");
 const authUserEl = document.querySelector("[data-auth-user]");
 const authHelperEl = document.querySelector("[data-auth-helper]");
-const authHelperExtraEl = document.querySelector("[data-auth-helper-extra]");
-const authConsumeBtn = document.querySelector("[data-auth-consume]");
+const authDevLinkWrap = document.querySelector("[data-auth-devlink]");
+const authDevLinkInput = document.querySelector("[data-auth-devlink-input]");
+const authDevLinkCopyBtn = document.querySelector("[data-auth-devlink-copy]");
+const authDevLinkOpenBtn = document.querySelector("[data-auth-devlink-open]");
 const authRefreshBtn = document.querySelector("[data-auth-refresh]");
 const authLogoutBtn = document.querySelector("[data-auth-logout]");
 const servicesStateEl = document.querySelector("[data-services-state]");
@@ -38,8 +40,6 @@ const bookingsStateEl = document.querySelector("[data-bookings-state]");
 const bookingsCtaEl = document.querySelector("[data-bookings-cta]");
 const bookingsListEl = document.querySelector("[data-bookings-list]");
 const bookingsRetryBtn = document.querySelector("[data-bookings-retry]");
-const isProduction = import.meta.env.MODE === "production";
-
 function normalizeBase(value) {
   if (!value) return "";
   return value.trim().replace(/\/+$/, "");
@@ -91,18 +91,20 @@ function setHelperMessage(message) {
   authHelperEl.textContent = message;
 }
 
-function setDevLinkState(enabled) {
-  if (isProduction) {
-    authConsumeBtn.hidden = true;
-    authHelperExtraEl.textContent = "";
-    authHelperExtraEl.style.display = "none";
-    return;
+function setDevLinkState(link) {
+  const enabled = Boolean(link);
+  if (authDevLinkWrap) {
+    authDevLinkWrap.hidden = !enabled;
   }
-
-  authConsumeBtn.hidden = false;
-  authConsumeBtn.disabled = !enabled;
-  authHelperExtraEl.textContent = enabled ? "Dev link listo." : "Solo en dev/test.";
-  authHelperExtraEl.style.display = "block";
+  if (authDevLinkInput) {
+    authDevLinkInput.value = enabled ? link : "";
+  }
+  if (authDevLinkCopyBtn) {
+    authDevLinkCopyBtn.disabled = !enabled;
+  }
+  if (authDevLinkOpenBtn) {
+    authDevLinkOpenBtn.disabled = !enabled;
+  }
 }
 
 function setServicesState(message) {
@@ -300,6 +302,8 @@ async function requestLink() {
 
   authRequestBtn.disabled = true;
   setAuthMessage("Enviando link...");
+  devLink = null;
+  setDevLinkState(null);
 
   try {
     const response = await fetch(`${authBaseUrl}/request-link`, {
@@ -318,13 +322,12 @@ async function requestLink() {
 
     setAuthMessage("Revisa tu email y abre el link para iniciar sesion.");
     setHelperMessage("El link llega por email. Abrelo para iniciar sesion.");
-    if (data.data?.devLink) {
-      devLink = data.data.devLink;
-      setDevLinkState(true);
-    } else {
-      devLink = null;
-      setDevLinkState(false);
-    }
+    devLink = data?.data?.devLink
+      || data?.data?.dev_link
+      || data?.devLink
+      || data?.dev_link
+      || null;
+    setDevLinkState(devLink);
   } catch {
     setAuthMessage("Error de red");
   } finally {
@@ -332,36 +335,37 @@ async function requestLink() {
   }
 }
 
-async function consumeDevLink() {
+async function copyDevLink() {
   if (!devLink) {
     setAuthMessage("Dev link no disponible");
     return;
   }
-
-  authConsumeBtn.disabled = true;
-  setAuthMessage("Consumiendo link...");
-
   try {
-    const response = await fetch(devLink, { credentials: "include" });
-    const data = await response.json().catch(() => null);
-
-    if (!response.ok || !data || !data.ok) {
-      const message = data?.error?.message || "Error de red";
-      setAuthMessage(message);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(devLink);
+      setAuthMessage("Link copiado.");
       return;
     }
-
-    setAuthMessage(data.data?.message || "Sesion activa");
-    devLink = null;
-    setDevLinkState(false);
-    await refreshSession();
-  } catch {
-    setAuthMessage("Error de red");
-  } finally {
-    if (!isProduction) {
-      authConsumeBtn.disabled = !devLink;
+    if (authDevLinkInput) {
+      authDevLinkInput.focus();
+      authDevLinkInput.select();
+      const copied = document.execCommand("copy");
+      setAuthMessage(copied ? "Link copiado." : "No se pudo copiar.");
+      return;
     }
+    setAuthMessage("No se pudo copiar.");
+  } catch {
+    setAuthMessage("No se pudo copiar.");
   }
+}
+
+function openDevLink() {
+  if (!devLink) {
+    setAuthMessage("Dev link no disponible");
+    return;
+  }
+  setAuthMessage("Abriendo link...");
+  window.location.assign(devLink);
 }
 
 async function refreshSession() {
@@ -762,7 +766,8 @@ async function cancelBooking(bookingId) {
 }
 
 authRequestBtn.addEventListener("click", requestLink);
-authConsumeBtn.addEventListener("click", consumeDevLink);
+authDevLinkCopyBtn.addEventListener("click", copyDevLink);
+authDevLinkOpenBtn.addEventListener("click", openDevLink);
 authRefreshBtn.addEventListener("click", refreshSession);
 authLogoutBtn.addEventListener("click", logout);
 bookingConfirmBtn.addEventListener("click", createBooking);
@@ -808,7 +813,7 @@ function handleAuthQuery() {
 }
 
 setHelperMessage("Usa tu email para recibir un link.");
-setDevLinkState(false);
+setDevLinkState(null);
 clearAvailability();
 setServicesState("Cargando...");
 setBookingsState("Cargando...");

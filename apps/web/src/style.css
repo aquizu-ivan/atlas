@@ -150,6 +150,19 @@ h1 {
   align-items: center;
 }
 
+.devlink {
+  display: grid;
+  gap: 10px;
+}
+
+.devlink-row {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.devlink .field {
+  font-size: 12px;
+}
+
 .field {
   height: 40px;
   border-radius: 12px;

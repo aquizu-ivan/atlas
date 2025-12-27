@@ -92,7 +92,7 @@ router.post("/request-link", async (req, res, next) => {
       message: "Te enviamos un link para entrar.",
     };
 
-    if (env.authDevLinks && env.nodeEnv !== "production") {
+    if (env.authDevLinks) {
       data.devLink = devLink;
     }
 

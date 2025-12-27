@@ -33,9 +33,11 @@ Secuencia de verificacion en local, en orden canonico:
 - Verificar que las llamadas a API usan VITE_API_BASE_URL y no rutas relativas rotas.
 
 ## QA Produccion (Pages -> Railway)
+Precondicion: AUTH_DEV_LINKS=true para mostrar acceso DEV en UI.
 1) Abrir https://aquizu-ivan.github.io/atlas/ y confirmar Health Online.
-2) En Auth, usar request-link con email demo (en prod puede no devolver devLink).
-3) Abrir el link recibido en email y verificar redirect a /atlas/?auth=success.
+2) En Auth, usar request-link con email demo.
+3) Si AUTH_DEV_LINKS=true, debe aparecer un acceso DEV con botones Copiar/Abrir.
+4) Abrir el link recibido (email o acceso DEV) y verificar redirect a /atlas/?auth=success.
 4) "Refrescar" debe mostrar Sesion activa con email.
 5) Logout y luego "Refrescar" debe mostrar "Necesitas iniciar sesion".
 6) DevTools -> Application -> Cookies:
@@ -94,7 +96,7 @@ Evidencia esperada:
 
 Nota:
 - No se exponen tokens ni cookies completas.
-- En prod no hay devLink; el flujo real requiere el link enviado por email.
+- En prod, devLink solo aparece si AUTH_DEV_LINKS=true; si no, el flujo requiere email real.
 
 ## QA Web local
 - pnpm -r run build
