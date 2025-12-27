@@ -64,6 +64,31 @@
           </div>
         </div>
       </section>
+      <section class="panel">
+        <div class="panel-title">Booking</div>
+        <div class="booking-grid">
+          <div class="card">
+            <div class="label">Servicios</div>
+            <div class="note" data-services-state>Loading...</div>
+            <select class="field" data-services-select disabled>
+              <option value="">Selecciona un servicio</option>
+            </select>
+            <div class="note" data-services-empty>--</div>
+          </div>
+          <div class="card">
+            <div class="label">Disponibilidad</div>
+            <input class="field" type="date" data-booking-date disabled />
+            <div class="note" data-availability-state>--</div>
+            <div class="slots" data-availability-slots></div>
+            <div class="note" data-booking-message>--</div>
+          </div>
+          <div class="card">
+            <div class="label">Mis reservas</div>
+            <div class="note" data-bookings-state>Loading...</div>
+            <div class="booking-list" data-bookings-list></div>
+          </div>
+        </div>
+      </section>
       <footer class="footer">
         <span>Health URL: <strong data-api>--</strong></span>
       </footer>
