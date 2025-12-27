@@ -59,8 +59,14 @@
           <div class="card">
             <div class="label">Instrucciones</div>
             <div class="note" data-auth-helper>Usa tu email para recibir un link.</div>
-            <button class="button ghost" type="button" data-auth-consume disabled>Consumir link</button>
-            <div class="note" data-auth-helper-extra>Solo en dev/test.</div>
+            <div class="devlink" data-auth-devlink hidden>
+              <div class="auth-row devlink-row">
+                <input class="field" type="text" data-auth-devlink-input readonly />
+                <button class="button ghost" type="button" data-auth-devlink-copy>Copiar</button>
+                <button class="button" type="button" data-auth-devlink-open>Abrir</button>
+              </div>
+              <div class="note" data-auth-helper-extra>Si el correo no llega, usa este acceso (DEV).</div>
+            </div>
           </div>
         </div>
       </section>
