@@ -36,7 +36,7 @@
           </div>
         </div>
       </section>
-      <section class="panel">
+      <section class="panel" id="auth-panel">
         <div class="panel-title">Auth</div>
         <div class="auth-grid">
           <div class="card">
@@ -64,30 +64,40 @@
           </div>
         </div>
       </section>
-      <section class="panel">
-        <div class="panel-title">Booking</div>
+      <section class="panel" id="booking-panel">
+        <div class="panel-title">Reservar</div>
         <div class="booking-grid">
           <div class="card">
-            <div class="label">Servicios</div>
-            <div class="note" data-services-state>Loading...</div>
-            <select class="field" data-services-select disabled>
+            <div class="label">Paso 1: Servicio</div>
+            <div class="note" data-services-state>Cargando...</div>
+            <select class="field" data-services-select aria-label="Selecciona un servicio" disabled>
               <option value="">Selecciona un servicio</option>
             </select>
             <div class="note" data-services-empty>--</div>
+            <button class="button ghost" type="button" data-services-retry disabled>Reintentar</button>
           </div>
           <div class="card">
-            <div class="label">Disponibilidad</div>
-            <input class="field" type="date" data-booking-date disabled />
-            <div class="note" data-availability-state>--</div>
+            <div class="label">Paso 2: Fecha</div>
+            <input class="field" type="date" data-booking-date aria-label="Selecciona una fecha" disabled />
+            <div class="note" data-availability-state>Selecciona servicio y fecha</div>
             <div class="slots" data-availability-slots></div>
-            <div class="note" data-booking-message>--</div>
+            <button class="button ghost" type="button" data-availability-retry disabled>Reintentar</button>
           </div>
           <div class="card">
-            <div class="label">Mis reservas</div>
-            <div class="note" data-bookings-state>Loading...</div>
-            <div class="booking-list" data-bookings-list></div>
+            <div class="label">Paso 3: Confirmar</div>
+            <div class="note" data-booking-summary>Selecciona un horario</div>
+            <button class="button" type="button" data-booking-confirm disabled>Confirmar reserva</button>
+            <div class="note" data-booking-message>--</div>
+            <div class="note" data-booking-confirmation>--</div>
           </div>
         </div>
+      </section>
+      <section class="panel" id="bookings-panel">
+        <div class="panel-title">Mis reservas</div>
+        <div class="note" data-bookings-state>Cargando...</div>
+        <div class="note" data-bookings-cta>--</div>
+        <div class="booking-list" data-bookings-list></div>
+        <button class="button ghost" type="button" data-bookings-retry disabled>Reintentar</button>
       </section>
       <footer class="footer">
         <span>Health URL: <strong data-api>--</strong></span>
