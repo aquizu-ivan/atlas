@@ -87,7 +87,7 @@ function hasCorsHeader(headers) {
   return Boolean(headerValue(headers, "access-control-allow-origin"));
 }
 
-async function run() {
+async function main() {
   const args = parseArgs();
   const pagesUrl = normalizeBaseUrl(args.pagesUrl || process.env.PAGES_URL || DEFAULT_PAGES_URL);
   const apiOrigin = normalizeBaseUrl(args.apiOrigin || process.env.API_ORIGIN || DEFAULT_API_ORIGIN);
@@ -95,10 +95,12 @@ async function run() {
 
   if (!pagesOrigin || !apiOrigin) {
     console.error("FAIL: invalid PAGES_URL or API_ORIGIN");
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const results = [];
+  let serviceIdForAvailability = "svc_basic";
 
   // Check A: Health ok
   try {
@@ -117,7 +119,7 @@ async function run() {
       headers: res.headers,
       reason: ok ? "" : "Expected 200 and ok:true",
     });
-  } catch (error) {
+  } catch {
     results.push({
       name: "health",
       ok: false,
@@ -203,6 +205,94 @@ async function run() {
     });
   }
 
+  // Check E: Services catalog
+  try {
+    const res = await request("GET", `${apiOrigin}/api/services`, {
+      Origin: pagesOrigin,
+    });
+    let ok = res.status === 200 && isCorsAllowed(res.headers, pagesOrigin);
+    try {
+      const data = JSON.parse(res.body);
+      const services = data?.data?.services || [];
+      if (Array.isArray(services) && services.length > 0 && services[0].id) {
+        serviceIdForAvailability = services[0].id;
+      }
+      ok = ok && Array.isArray(services);
+    } catch {
+      ok = false;
+    }
+    results.push({
+      name: "services",
+      ok,
+      status: res.status,
+      headers: res.headers,
+      reason: ok ? "" : "Expected 200, CORS headers, and services list",
+    });
+  } catch {
+    results.push({
+      name: "services",
+      ok: false,
+      status: 0,
+      headers: {},
+      reason: "Network error",
+    });
+  }
+
+  // Check F: Availability
+  try {
+    const date = "2025-12-27";
+    const url = `${apiOrigin}/api/availability?serviceId=${encodeURIComponent(serviceIdForAvailability)}&date=${date}`;
+    const res = await request("GET", url, {
+      Origin: pagesOrigin,
+    });
+    let ok = res.status === 200 && isCorsAllowed(res.headers, pagesOrigin);
+    try {
+      const data = JSON.parse(res.body);
+      const slots = data?.data?.slots || [];
+      ok = ok && Array.isArray(slots);
+    } catch {
+      ok = false;
+    }
+    results.push({
+      name: "availability",
+      ok,
+      status: res.status,
+      headers: res.headers,
+      reason: ok ? "" : "Expected 200, CORS headers, and slots list",
+    });
+  } catch {
+    results.push({
+      name: "availability",
+      ok: false,
+      status: 0,
+      headers: {},
+      reason: "Network error",
+    });
+  }
+
+  // Check G: Bookings/me without session
+  try {
+    const res = await request("GET", `${apiOrigin}/api/bookings/me`, {
+      Origin: pagesOrigin,
+    });
+    const ok = res.status === 401 && isCorsAllowed(res.headers, pagesOrigin);
+    results.push({
+      name: "bookings-me",
+      ok,
+      status: res.status,
+      headers: res.headers,
+      reason: ok ? "" : "Expected 401 and CORS headers",
+    });
+  } catch {
+    results.push({
+      name: "bookings-me",
+      ok: false,
+      status: 0,
+      headers: {},
+      reason: "Network error",
+    });
+  }
+
   let passCount = 0;
   for (const result of results) {
     const tag = result.ok ? "PASS" : "FAIL";
@@ -216,10 +306,13 @@ async function run() {
 
   const failed = results.length - passCount;
   console.log(`Summary: ${passCount} passed, ${failed} failed`);
-  process.exit(failed === 0 ? 0 : 1);
+  if (failed > 0) {
+    process.exitCode = 1;
+  }
 }
 
-run().catch(() => {
-  console.error("FAIL: unexpected error");
-  process.exit(1);
+main().catch((err) => {
+  console.error("[FAIL] qa:exhibicion");
+  console.error(err && err.message ? err.message : String(err));
+  process.exitCode = 1;
 });
