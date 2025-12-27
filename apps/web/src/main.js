@@ -29,6 +29,9 @@ const servicesSelectEl = document.querySelector("[data-services-select]");
 const servicesEmptyEl = document.querySelector("[data-services-empty]");
 const servicesRetryBtn = document.querySelector("[data-services-retry]");
 const bookingDateEl = document.querySelector("[data-booking-date]");
+const dateTodayBtn = document.querySelector("[data-date-today]");
+const dateTomorrowBtn = document.querySelector("[data-date-tomorrow]");
+const dateWeekBtn = document.querySelector("[data-date-week]");
 const availabilityStateEl = document.querySelector("[data-availability-state]");
 const availabilitySlotsEl = document.querySelector("[data-availability-slots]");
 const availabilityRetryBtn = document.querySelector("[data-availability-retry]");
@@ -51,6 +54,44 @@ function normalizeOrigin(base) {
     return normalized.slice(0, -4);
   }
   return normalized;
+}
+
+function normalizeKey(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function slugify(value) {
+  return normalizeKey(value)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function isValidDateString(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) {
+    return false;
+  }
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year
+    && date.getMonth() === month - 1
+    && date.getDate() === day;
+}
+
+function formatDateInput(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function readBookingQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const rawService = params.get("service");
+  const rawDate = params.get("date");
+  return {
+    serviceKey: normalizeKey(rawService),
+    date: isValidDateString(rawDate) ? rawDate : "",
+  };
 }
 
 const apiOrigin = normalizeOrigin(rawApiBase);
@@ -278,6 +319,55 @@ function parseBookingsPayload(data) {
   return data?.data?.bookings || data?.bookings || [];
 }
 
+function matchesServiceParam(service, key) {
+  if (!service || !key) {
+    return false;
+  }
+  const normalizedKey = normalizeKey(key);
+  if (!normalizedKey) {
+    return false;
+  }
+  const idRaw = normalizeKey(service.id);
+  const shortId = idRaw.startsWith("svc_") ? idRaw.slice(4) : idRaw;
+  const nameSlug = slugify(service.name || "");
+  const idSlug = slugify(service.id || "");
+  return normalizedKey === idRaw
+    || normalizedKey === shortId
+    || normalizedKey === nameSlug
+    || normalizedKey === idSlug;
+}
+
+function serviceParamValue(service) {
+  if (!service) {
+    return "";
+  }
+  const idRaw = normalizeKey(service.id);
+  if (idRaw.startsWith("svc_")) {
+    return idRaw.slice(4);
+  }
+  const nameSlug = slugify(service.name || "");
+  return nameSlug || service.id || "";
+}
+
+function updateBookingQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const serviceValue = selectedService ? serviceParamValue(selectedService) : "";
+  if (serviceValue) {
+    params.set("service", serviceValue);
+  } else {
+    params.delete("service");
+  }
+  const dateValue = bookingDateEl.value;
+  if (isValidDateString(dateValue)) {
+    params.set("date", dateValue);
+  } else {
+    params.delete("date");
+  }
+  const query = params.toString();
+  const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+  window.history.replaceState({}, "", nextUrl);
+}
+
 function calculateEndAt(startAt, durationMin) {
   const startDate = new Date(startAt);
   if (Number.isNaN(startDate.getTime())) {
@@ -333,6 +423,7 @@ let selectedServiceId = "";
 let selectedService = null;
 let selectedSlot = "";
 let selectedDate = "";
+const initialBookingQuery = readBookingQuery();
 
 async function requestLink() {
   const email = authEmailInput.value.trim();
@@ -521,6 +612,25 @@ async function loadServices() {
     servicesSelectEl.disabled = false;
     servicesEmptyEl.textContent = "Selecciona un servicio";
     setServicesState("Listo");
+
+    if (initialBookingQuery.serviceKey) {
+      const match = servicesCache.find((service) => matchesServiceParam(service, initialBookingQuery.serviceKey));
+      if (match) {
+        selectedServiceId = match.id;
+        selectedService = match;
+        servicesSelectEl.value = match.id;
+        bookingDateEl.disabled = false;
+      }
+    }
+
+    if (initialBookingQuery.date) {
+      bookingDateEl.value = initialBookingQuery.date;
+      selectedDate = initialBookingQuery.date;
+      updateBookingSummary();
+      if (selectedServiceId) {
+        loadAvailability();
+      }
+    }
   } catch {
     setServicesState("No se pudo conectar");
     toggleRetry(servicesRetryBtn, true);
@@ -536,6 +646,17 @@ function clearAvailability() {
   selectedSlot = "";
   bookingConfirmBtn.disabled = true;
   toggleRetry(availabilityRetryBtn, false);
+}
+
+function applyDatePreset(offsetDays) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+  const value = formatDateInput(date);
+  bookingDateEl.value = value;
+  selectedDate = value;
+  updateBookingSummary();
+  updateBookingQuery();
+  loadAvailability();
 }
 
 async function loadAvailability() {
@@ -808,6 +929,9 @@ authDevLinkOpenBtn.addEventListener("click", openDevLink);
 authRefreshBtn.addEventListener("click", refreshSession);
 authLogoutBtn.addEventListener("click", logout);
 bookingConfirmBtn.addEventListener("click", createBooking);
+dateTodayBtn.addEventListener("click", () => applyDatePreset(0));
+dateTomorrowBtn.addEventListener("click", () => applyDatePreset(1));
+dateWeekBtn.addEventListener("click", () => applyDatePreset(7));
 servicesRetryBtn.addEventListener("click", loadServices);
 availabilityRetryBtn.addEventListener("click", loadAvailability);
 bookingsRetryBtn.addEventListener("click", loadBookings);
@@ -817,12 +941,14 @@ servicesSelectEl.addEventListener("change", (event) => {
   bookingDateEl.disabled = !selectedServiceId;
   clearAvailability();
   updateBookingSummary();
+  updateBookingQuery();
   if (selectedServiceId && bookingDateEl.value) {
     loadAvailability();
   }
 });
 bookingDateEl.addEventListener("change", () => {
   updateBookingSummary();
+  updateBookingQuery();
   loadAvailability();
 });
 
