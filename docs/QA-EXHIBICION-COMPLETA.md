@@ -41,6 +41,17 @@ Secuencia de verificacion en local, en orden canonico:
 6) DevTools -> Application -> Cookies:
    - Debe existir atlas_session con Secure=true y SameSite=None.
 
+## Booking Flow (Web)
+1) Health online en Pages.
+2) Auth session online.
+3) Servicios cargan (select habilitado).
+4) Elegir servicio + fecha -> disponibilidad carga.
+5) Click en slot -> booking OK o 409 controlado.
+6) Mis reservas lista y permite cancelar.
+7) Cancel OK y refresca lista.
+
+Nota: si los endpoints de servicios/disponibilidad/reservas no existen, la UI muestra "Not available yet" sin romper.
+
 ## QA con curl (CORS)
 Health con Origin:
 - curl -i -H "Origin: https://aquizu-ivan.github.io" https://atlas-atlas.up.railway.app/api/health
