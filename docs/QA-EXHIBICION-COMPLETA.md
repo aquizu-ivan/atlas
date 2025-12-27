@@ -46,11 +46,16 @@ Secuencia de verificacion en local, en orden canonico:
 2) Auth session online.
 3) Servicios cargan (select habilitado).
 4) Elegir servicio + fecha -> disponibilidad carga.
-5) Click en slot -> booking OK o 409 controlado.
+5) Seleccionar slot -> confirmar reserva -> booking OK o 409 controlado.
 6) Mis reservas lista y permite cancelar (orden startAt desc).
 7) Cancel OK y refresca lista (idempotente si ya estaba cancelada).
 
 Nota: si los endpoints de servicios/disponibilidad/reservas no existen, la UI muestra "Not available yet" sin romper.
+
+Mensajes esperados:
+- 401: "Necesitas iniciar sesion" + CTA suave a Auth.
+- 409: "Ese horario ya no esta disponible."
+- 5xx/network: "No se pudo conectar" + boton Reintentar.
 
 ## QA con curl (CORS)
 Health con Origin:
@@ -90,3 +95,8 @@ Evidencia esperada:
 Nota:
 - No se exponen tokens ni cookies completas.
 - En prod no hay devLink; el flujo real requiere el link enviado por email.
+
+## QA Web local
+- pnpm -r run build
+- pnpm -C apps/web run dev
+- Abrir http://localhost:5173

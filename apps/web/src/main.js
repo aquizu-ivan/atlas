@@ -25,12 +25,19 @@ const authLogoutBtn = document.querySelector("[data-auth-logout]");
 const servicesStateEl = document.querySelector("[data-services-state]");
 const servicesSelectEl = document.querySelector("[data-services-select]");
 const servicesEmptyEl = document.querySelector("[data-services-empty]");
+const servicesRetryBtn = document.querySelector("[data-services-retry]");
 const bookingDateEl = document.querySelector("[data-booking-date]");
 const availabilityStateEl = document.querySelector("[data-availability-state]");
 const availabilitySlotsEl = document.querySelector("[data-availability-slots]");
+const availabilityRetryBtn = document.querySelector("[data-availability-retry]");
+const bookingSummaryEl = document.querySelector("[data-booking-summary]");
+const bookingConfirmBtn = document.querySelector("[data-booking-confirm]");
 const bookingMessageEl = document.querySelector("[data-booking-message]");
+const bookingConfirmationEl = document.querySelector("[data-booking-confirmation]");
 const bookingsStateEl = document.querySelector("[data-bookings-state]");
+const bookingsCtaEl = document.querySelector("[data-bookings-cta]");
 const bookingsListEl = document.querySelector("[data-bookings-list]");
+const bookingsRetryBtn = document.querySelector("[data-bookings-retry]");
 const isProduction = import.meta.env.MODE === "production";
 
 function normalizeBase(value) {
@@ -114,6 +121,97 @@ function setBookingsState(message) {
   bookingsStateEl.textContent = message;
 }
 
+function setButtonLoading(button, isLoading) {
+  if (!button) return;
+  if (isLoading) {
+    button.dataset.loading = "true";
+  } else {
+    delete button.dataset.loading;
+  }
+}
+
+function toggleRetry(button, show) {
+  if (!button) return;
+  button.hidden = !show;
+  button.disabled = !show;
+}
+
+function resetBookingsCta() {
+  bookingsCtaEl.textContent = "--";
+  bookingsCtaEl.innerHTML = "";
+  bookingsCtaEl.textContent = "--";
+}
+
+function setBookingsCta(message, showLink) {
+  bookingsCtaEl.innerHTML = "";
+  if (!message && !showLink) {
+    bookingsCtaEl.textContent = "--";
+    return;
+  }
+  if (message) {
+    bookingsCtaEl.append(document.createTextNode(message));
+  }
+  if (showLink) {
+    if (message) {
+      bookingsCtaEl.append(document.createTextNode(" "));
+    }
+    const link = document.createElement("a");
+    link.href = "#auth-panel";
+    link.className = "link";
+    link.textContent = "Iniciar sesion";
+    bookingsCtaEl.append(link);
+  }
+}
+
+function setBookingSummary(message) {
+  bookingSummaryEl.textContent = message;
+}
+
+function setBookingConfirmation(message) {
+  bookingConfirmationEl.textContent = message;
+}
+
+function formatStatus(status) {
+  if (!status) return "pending";
+  const normalized = String(status).toUpperCase();
+  if (normalized === "CONFIRMED") return "Confirmada";
+  if (normalized === "CANCELED") return "Cancelada";
+  if (normalized === "PENDING") return "Pendiente";
+  return normalized;
+}
+
+function describeError(response, data) {
+  if (!response) {
+    return "No se pudo conectar";
+  }
+  if (response.status === 400) {
+    const detail = data?.error?.message;
+    if (!detail) {
+      return "Datos invalidos";
+    }
+    const humanDetail = String(detail)
+      .replace("StartAt outside availability", "Horario fuera de disponibilidad")
+      .replace("Invalid startAt", "Fecha invalida")
+      .replace("Invalid date", "Fecha invalida")
+      .replace("Missing required fields", "Faltan datos")
+      .replace("Missing required query params", "Faltan datos");
+    return `Datos invalidos: ${humanDetail}`;
+  }
+  if (response.status === 401) {
+    return "Necesitas iniciar sesion";
+  }
+  if (response.status === 404) {
+    return "Not found";
+  }
+  if (response.status === 409) {
+    return "Ese horario ya no esta disponible.";
+  }
+  if (response.status >= 500) {
+    return "No se pudo conectar";
+  }
+  return data?.error?.message || "Request error";
+}
+
 function formatSlotLabel(iso) {
   if (!iso || typeof iso !== "string") {
     return "--";
@@ -135,6 +233,16 @@ function parseSlotsPayload(data) {
 
 function parseBookingsPayload(data) {
   return data?.data?.bookings || data?.bookings || [];
+}
+
+function calculateEndAt(startAt, durationMin) {
+  const startDate = new Date(startAt);
+  if (Number.isNaN(startDate.getTime())) {
+    return null;
+  }
+  const duration = Number(durationMin) || 0;
+  const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
+  return endDate.toISOString();
 }
 
 async function loadHealth() {
@@ -179,6 +287,9 @@ async function loadHealth() {
 let devLink = null;
 let servicesCache = [];
 let selectedServiceId = "";
+let selectedService = null;
+let selectedSlot = "";
+let selectedDate = "";
 
 async function requestLink() {
   const email = authEmailInput.value.trim();
@@ -317,11 +428,21 @@ async function logout() {
 }
 
 async function loadServices() {
-  setServicesState("Loading...");
+  setServicesState("Cargando...");
   servicesEmptyEl.textContent = "--";
   servicesSelectEl.disabled = true;
   servicesSelectEl.innerHTML = "<option value=\"\">Selecciona un servicio</option>";
   servicesCache = [];
+  selectedServiceId = "";
+  selectedService = null;
+  selectedSlot = "";
+  selectedDate = "";
+  bookingDateEl.value = "";
+  bookingDateEl.disabled = true;
+  setBookingSummary("Selecciona un horario");
+  setBookingMessage("--");
+  setBookingConfirmation("--");
+  toggleRetry(servicesRetryBtn, false);
 
   try {
     const response = await fetch(apiEndpoint("/services"));
@@ -333,13 +454,14 @@ async function loadServices() {
       return;
     }
     if (!response.ok) {
-      setServicesState("Service error");
+      setServicesState("No se pudo conectar");
+      toggleRetry(servicesRetryBtn, true);
       return;
     }
 
     const services = parseServicesPayload(data);
     if (!Array.isArray(services) || services.length === 0) {
-      setServicesState("Empty");
+      setServicesState("Sin servicios");
       servicesEmptyEl.textContent = "Sin servicios";
       return;
     }
@@ -352,9 +474,11 @@ async function loadServices() {
       servicesSelectEl.append(option);
     }
     servicesSelectEl.disabled = false;
-    setServicesState("Ready");
+    servicesEmptyEl.textContent = "Selecciona un servicio";
+    setServicesState("Listo");
   } catch {
-    setServicesState("Network error");
+    setServicesState("No se pudo conectar");
+    toggleRetry(servicesRetryBtn, true);
   }
 }
 
@@ -362,23 +486,34 @@ function clearAvailability() {
   availabilitySlotsEl.innerHTML = "";
   setAvailabilityState("--");
   setBookingMessage("--");
+  setBookingSummary("Selecciona un horario");
+  setBookingConfirmation("--");
+  selectedSlot = "";
+  bookingConfirmBtn.disabled = true;
+  toggleRetry(availabilityRetryBtn, false);
 }
 
 async function loadAvailability() {
   const date = bookingDateEl.value;
-  if (!selectedServiceId || !date) {
+  selectedDate = date;
+  if (!selectedServiceId || !selectedDate) {
     setAvailabilityState("Selecciona servicio y fecha");
     availabilitySlotsEl.innerHTML = "";
     return;
   }
 
-  setAvailabilityState("Loading...");
+  setAvailabilityState("Cargando...");
   setBookingMessage("--");
+  setBookingConfirmation("--");
   availabilitySlotsEl.innerHTML = "";
+  selectedSlot = "";
+  bookingConfirmBtn.disabled = true;
+  updateBookingSummary();
+  toggleRetry(availabilityRetryBtn, false);
 
   const query = new URLSearchParams({
     serviceId: selectedServiceId,
-    date,
+    date: selectedDate,
   }).toString();
 
   try {
@@ -390,40 +525,71 @@ async function loadAvailability() {
       return;
     }
     if (!response.ok) {
-      setAvailabilityState("Service error");
+      const message = describeError(response, data);
+      setAvailabilityState(message);
+      if (response.status >= 500) {
+        toggleRetry(availabilityRetryBtn, true);
+      }
       return;
     }
 
     const slots = parseSlotsPayload(data);
     if (!Array.isArray(slots) || slots.length === 0) {
-      setAvailabilityState("Empty");
+      setAvailabilityState("Sin horarios disponibles");
       return;
     }
 
-    setAvailabilityState("Ready");
+    setAvailabilityState("Listo");
     for (const slot of slots) {
       const startAt = slot.startAt || slot;
       const button = document.createElement("button");
       button.type = "button";
       button.className = "button ghost slot-button";
       button.textContent = formatSlotLabel(startAt);
-      button.addEventListener("click", () => createBooking(startAt));
+      button.addEventListener("click", () => selectSlot(startAt, button));
       availabilitySlotsEl.append(button);
     }
   } catch {
-    setAvailabilityState("Network error");
+    setAvailabilityState("No se pudo conectar");
+    toggleRetry(availabilityRetryBtn, true);
   }
 }
 
-async function createBooking(startAt) {
-  if (!selectedServiceId || !startAt) {
-    setBookingMessage("Request error");
+function updateBookingSummary() {
+  const serviceName = selectedService?.name || "Servicio";
+  if (!selectedServiceId || !selectedDate) {
+    setBookingSummary("Selecciona un horario");
+    return;
+  }
+  if (!selectedSlot) {
+    setBookingSummary(`${serviceName} - ${selectedDate}`);
+    return;
+  }
+  setBookingSummary(`${serviceName} - ${formatSlotLabel(selectedSlot)}`);
+}
+
+function selectSlot(startAt, button) {
+  selectedSlot = startAt;
+  const buttons = availabilitySlotsEl.querySelectorAll("button");
+  buttons.forEach((slotButton) => {
+    slotButton.classList.toggle("is-selected", slotButton === button);
+  });
+  updateBookingSummary();
+  bookingConfirmBtn.disabled = false;
+}
+
+async function createBooking() {
+  if (!selectedServiceId || !selectedSlot) {
+    setBookingMessage("Datos invalidos");
     return;
   }
 
   setBookingMessage("Reservando...");
+  setBookingConfirmation("--");
   const buttons = availabilitySlotsEl.querySelectorAll("button");
   buttons.forEach((button) => { button.disabled = true; });
+  bookingConfirmBtn.disabled = true;
+  setButtonLoading(bookingConfirmBtn, true);
 
   try {
     const response = await fetch(apiEndpoint("/bookings"), {
@@ -432,7 +598,7 @@ async function createBooking(startAt) {
       credentials: "include",
       body: JSON.stringify({
         serviceId: selectedServiceId,
-        startAt,
+        startAt: selectedSlot,
       }),
     });
     const data = await response.json().catch(() => null);
@@ -450,24 +616,46 @@ async function createBooking(startAt) {
       return;
     }
     if (!response.ok || !data || !data.ok) {
-      const message = data?.error?.message || "Service error";
+      const message = describeError(response, data);
       setBookingMessage(message);
       return;
     }
 
     setBookingMessage("Reserva creada.");
+    const booking = data?.data?.booking;
+    if (booking) {
+      const serviceName = selectedService?.name || "Servicio";
+      const endAt = calculateEndAt(booking.startAt, selectedService?.durationMin);
+      const statusLabel = formatStatus(booking.status);
+      const confirmationParts = [
+        `ID: ${booking.id}`,
+        `Servicio: ${serviceName}`,
+        `Inicio: ${formatSlotLabel(booking.startAt)}`,
+      ];
+      if (endAt) {
+        confirmationParts.push(`Fin: ${formatSlotLabel(endAt)}`);
+      }
+      confirmationParts.push(`Estado: ${statusLabel}`);
+      setBookingConfirmation(confirmationParts.join(" - "));
+    }
     await loadBookings();
     await loadAvailability();
+    selectedSlot = "";
+    bookingConfirmBtn.disabled = true;
   } catch {
-    setBookingMessage("Network error");
+    setBookingMessage("No se pudo conectar");
   } finally {
     buttons.forEach((button) => { button.disabled = false; });
+    setButtonLoading(bookingConfirmBtn, false);
+    bookingConfirmBtn.disabled = !selectedSlot;
   }
 }
 
 async function loadBookings() {
-  setBookingsState("Loading...");
+  setBookingsState("Cargando...");
   bookingsListEl.innerHTML = "";
+  setBookingsCta(null, false);
+  toggleRetry(bookingsRetryBtn, false);
 
   try {
     const response = await fetch(apiEndpoint("/bookings/me"), {
@@ -477,6 +665,8 @@ async function loadBookings() {
 
     if (response.status === 401) {
       setBookingsState("Necesitas iniciar sesion");
+      setBookingsCta("Para ver tus reservas,", true);
+      toggleRetry(bookingsRetryBtn, true);
       return;
     }
     if (response.status === 404) {
@@ -484,17 +674,21 @@ async function loadBookings() {
       return;
     }
     if (!response.ok) {
-      setBookingsState("Service error");
+      setBookingsState(describeError(response, data));
+      if (response.status >= 500) {
+        toggleRetry(bookingsRetryBtn, true);
+      }
       return;
     }
 
     const bookings = parseBookingsPayload(data);
     if (!Array.isArray(bookings) || bookings.length === 0) {
-      setBookingsState("Empty");
+      setBookingsState("Sin reservas");
+      setBookingsCta("Crea tu primera reserva.", false);
       return;
     }
 
-    setBookingsState("Ready");
+    setBookingsState("Listo");
     for (const booking of bookings) {
       const item = document.createElement("div");
       item.className = "booking-item";
@@ -505,31 +699,35 @@ async function loadBookings() {
 
       const meta = document.createElement("div");
       meta.className = "booking-meta";
-      const status = booking.status || "unknown";
-      const serviceName = booking.service?.name ? ` · ${booking.service.name}` : "";
+      const status = formatStatus(booking.status);
+      const serviceName = booking.service?.name ? ` - ${booking.service.name}` : "";
       meta.textContent = `${status}${serviceName}`;
 
       const cancel = document.createElement("button");
       cancel.type = "button";
       cancel.className = "button ghost";
-      cancel.textContent = "Cancelar";
+      cancel.textContent = booking.status === "CANCELED" ? "Cancelada" : "Cancelar";
+      cancel.disabled = booking.status === "CANCELED";
       cancel.addEventListener("click", () => cancelBooking(booking.id));
 
       item.append(title, meta, cancel);
       bookingsListEl.append(item);
     }
   } catch {
-    setBookingsState("Network error");
+    setBookingsState("No se pudo conectar");
+    toggleRetry(bookingsRetryBtn, true);
   }
 }
 
 async function cancelBooking(bookingId) {
   if (!bookingId) {
-    setBookingsState("Request error");
+    setBookingsState("Datos invalidos");
     return;
   }
 
   setBookingsState("Cancelando...");
+  setBookingsCta(null, false);
+  toggleRetry(bookingsRetryBtn, false);
   try {
     const response = await fetch(apiEndpoint(`/bookings/${bookingId}/cancel`), {
       method: "POST",
@@ -539,22 +737,27 @@ async function cancelBooking(bookingId) {
 
     if (response.status === 401) {
       setBookingsState("Necesitas iniciar sesion");
+      setBookingsCta("Para cancelar,", true);
+      toggleRetry(bookingsRetryBtn, true);
       return;
     }
     if (response.status === 404) {
-      setBookingsState("Not available yet");
+      setBookingsState("Not found");
       return;
     }
     if (!response.ok || !data || !data.ok) {
-      const message = data?.error?.message || "Service error";
-      setBookingsState(message);
+      setBookingsState(describeError(response, data));
+      if (response.status >= 500) {
+        toggleRetry(bookingsRetryBtn, true);
+      }
       return;
     }
 
     setBookingsState("Reserva cancelada");
     await loadBookings();
   } catch {
-    setBookingsState("Network error");
+    setBookingsState("No se pudo conectar");
+    toggleRetry(bookingsRetryBtn, true);
   }
 }
 
@@ -562,15 +765,22 @@ authRequestBtn.addEventListener("click", requestLink);
 authConsumeBtn.addEventListener("click", consumeDevLink);
 authRefreshBtn.addEventListener("click", refreshSession);
 authLogoutBtn.addEventListener("click", logout);
+bookingConfirmBtn.addEventListener("click", createBooking);
+servicesRetryBtn.addEventListener("click", loadServices);
+availabilityRetryBtn.addEventListener("click", loadAvailability);
+bookingsRetryBtn.addEventListener("click", loadBookings);
 servicesSelectEl.addEventListener("change", (event) => {
   selectedServiceId = event.target.value;
+  selectedService = servicesCache.find((service) => service.id === selectedServiceId) || null;
   bookingDateEl.disabled = !selectedServiceId;
   clearAvailability();
+  updateBookingSummary();
   if (selectedServiceId && bookingDateEl.value) {
     loadAvailability();
   }
 });
 bookingDateEl.addEventListener("change", () => {
+  updateBookingSummary();
   loadAvailability();
 });
 
@@ -600,8 +810,8 @@ function handleAuthQuery() {
 setHelperMessage("Usa tu email para recibir un link.");
 setDevLinkState(false);
 clearAvailability();
-setServicesState("Loading...");
-setBookingsState("Loading...");
+setServicesState("Cargando...");
+setBookingsState("Cargando...");
 
 const authQuery = handleAuthQuery();
 loadHealth();
