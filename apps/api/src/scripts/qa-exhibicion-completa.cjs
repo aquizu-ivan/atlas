@@ -31,7 +31,7 @@ function getOrigin(url) {
   }
 }
 
-function request(method, url, headers = {}) {
+function request(method, url, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
     const parsed = new URL(url);
     const transport = parsed.protocol === "https:" ? https : http;
@@ -58,6 +58,9 @@ function request(method, url, headers = {}) {
     });
 
     req.on("error", reject);
+    if (body) {
+      req.write(body);
+    }
     req.end();
   });
 }
@@ -87,6 +90,19 @@ function hasCorsHeader(headers) {
   return Boolean(headerValue(headers, "access-control-allow-origin"));
 }
 
+function extractDevToken(location) {
+  if (!location) {
+    return "";
+  }
+  const hashIndex = location.indexOf("#");
+  if (hashIndex === -1) {
+    return "";
+  }
+  const hash = location.slice(hashIndex + 1);
+  const params = new URLSearchParams(hash);
+  return params.get("devToken") || "";
+}
+
 async function main() {
   const args = parseArgs();
   const pagesUrl = normalizeBaseUrl(args.pagesUrl || process.env.PAGES_URL || DEFAULT_PAGES_URL);
@@ -101,6 +117,7 @@ async function main() {
 
   const results = [];
   let serviceIdForAvailability = "svc_basic";
+  let slotForBooking = "";
 
   // Check A: Health ok
   try {
@@ -250,6 +267,9 @@ async function main() {
       const data = JSON.parse(res.body);
       const slots = data?.data?.slots || [];
       ok = ok && Array.isArray(slots);
+      if (Array.isArray(slots) && slots.length > 0) {
+        slotForBooking = slots[0]?.startAt || slots[0] || "";
+      }
     } catch {
       ok = false;
     }
@@ -293,19 +313,125 @@ async function main() {
     });
   }
 
+  // Check H: Bookings POST without session (should be 401, not 404)
+  try {
+    const startAt = slotForBooking || new Date().toISOString();
+    const payload = JSON.stringify({
+      serviceId: serviceIdForAvailability,
+      startAt,
+    });
+    const res = await request("POST", `${apiOrigin}/api/bookings`, {
+      Origin: pagesOrigin,
+      "Content-Type": "application/json",
+    }, payload);
+    const ok = res.status === 401 && isCorsAllowed(res.headers, pagesOrigin);
+    results.push({
+      name: "bookings-post-unauth",
+      ok,
+      status: res.status,
+      headers: res.headers,
+      reason: ok ? "" : "Expected 401 (not 404) with CORS headers",
+    });
+  } catch {
+    results.push({
+      name: "bookings-post-unauth",
+      ok: false,
+      status: 0,
+      headers: {},
+      reason: "Network error",
+    });
+  }
+
+  // Check I: Dev token auth + bookings POST
+  try {
+    const requestPayload = JSON.stringify({ email: "demo@atlas.local" });
+    const requestRes = await request("POST", `${apiOrigin}/api/auth/request-link`, {
+      "Content-Type": "application/json",
+    }, requestPayload);
+    let devLink = "";
+    try {
+      const data = JSON.parse(requestRes.body);
+      devLink = data?.data?.devLink || "";
+    } catch {
+      devLink = "";
+    }
+
+    if (!devLink) {
+      results.push({
+        name: "bookings-post-auth",
+        ok: true,
+        status: requestRes.status,
+        headers: requestRes.headers,
+        skipped: true,
+        reason: "Skipped (devLink not available)",
+      });
+    } else {
+      const consumeRes = await request("GET", devLink, {
+        Accept: "text/html",
+      });
+      const location = headerValue(consumeRes.headers, "location");
+      const devToken = extractDevToken(location);
+
+      if (!devToken) {
+        results.push({
+          name: "bookings-post-auth",
+          ok: false,
+          status: consumeRes.status,
+          headers: consumeRes.headers,
+          reason: "Missing devToken in redirect",
+        });
+      } else {
+        const startAt = slotForBooking || new Date().toISOString();
+        const payload = JSON.stringify({
+          serviceId: serviceIdForAvailability,
+          startAt,
+        });
+        const res = await request("POST", `${apiOrigin}/api/bookings`, {
+          Origin: pagesOrigin,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${devToken}`,
+        }, payload);
+        const ok = [200, 201, 409].includes(res.status) && isCorsAllowed(res.headers, pagesOrigin);
+        results.push({
+          name: "bookings-post-auth",
+          ok,
+          status: res.status,
+          headers: res.headers,
+          reason: ok ? "" : "Expected 200/201/409 with CORS headers",
+        });
+      }
+    }
+  } catch {
+    results.push({
+      name: "bookings-post-auth",
+      ok: false,
+      status: 0,
+      headers: {},
+      reason: "Network error",
+    });
+  }
+
   let passCount = 0;
+  let skipCount = 0;
   for (const result of results) {
-    const tag = result.ok ? "PASS" : "FAIL";
-    if (result.ok) passCount += 1;
+    const tag = result.skipped ? "SKIP" : result.ok ? "PASS" : "FAIL";
+    if (result.skipped) {
+      skipCount += 1;
+    } else if (result.ok) {
+      passCount += 1;
+    }
     console.log(`[${tag}] ${result.name} status=${result.status}`);
     console.log(`  headers: ${formatHeaderEvidence(result.headers)}`);
     if (!result.ok && result.reason) {
       console.log(`  reason: ${result.reason}`);
     }
+    if (result.skipped && result.reason) {
+      console.log(`  reason: ${result.reason}`);
+    }
   }
 
-  const failed = results.length - passCount;
-  console.log(`Summary: ${passCount} passed, ${failed} failed`);
+  const failed = results.length - passCount - skipCount;
+  console.log(`Summary: ${passCount} passed, ${failed} failed, ${skipCount} skipped`);
   if (failed > 0) {
     process.exitCode = 1;
   }

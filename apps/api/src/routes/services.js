@@ -2,18 +2,13 @@ import express from "express";
 import { prisma } from "../prisma.js";
 import { badRequest, notFound } from "../errors/httpErrors.js";
 import { buildSlots, parseDateParts } from "../utils/availability.js";
+import { ensureFallbackServices, findFallbackService, getFallbackServices } from "../utils/services.js";
 
 const router = express.Router();
 
-const FALLBACK_SERVICES = [
-  { id: "svc_basic", name: "Consulta Basica", durationMin: 30 },
-  { id: "svc_focus", name: "Sesion Focus", durationMin: 45 },
-  { id: "svc_premium", name: "Sesion Premium", durationMin: 60 },
-];
-
 async function getServiceCatalog() {
   if (!prisma) {
-    return FALLBACK_SERVICES;
+    return getFallbackServices();
   }
   const services = await prisma.service.findMany({
     where: { isActive: true },
@@ -25,7 +20,8 @@ async function getServiceCatalog() {
     },
   });
   if (!services.length) {
-    return FALLBACK_SERVICES;
+    await ensureFallbackServices(prisma);
+    return getFallbackServices();
   }
   return services.map((service) => ({
     id: service.id,
@@ -48,7 +44,7 @@ async function findService(serviceId) {
       };
     }
   }
-  return FALLBACK_SERVICES.find((service) => service.id === serviceId) || null;
+  return findFallbackService(serviceId);
 }
 
 router.get("/services", async (req, res, next) => {

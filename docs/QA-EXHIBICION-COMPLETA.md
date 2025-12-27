@@ -101,6 +101,8 @@ Evidencia esperada:
 - session-origin: status 200 o 401, nunca 500, con Access-Control-Allow-Origin y Access-Control-Allow-Credentials
 - preflight: status 200/204/401 con headers CORS
 - invalid-origin: status 200 sin Access-Control-Allow-Origin
+- bookings-post-unauth: status 401 (no 404)
+- bookings-post-auth: status 200/201 (o 409 si ya existe el slot) cuando AUTH_DEV_LINKS=true
 
 Nota:
 - No se exponen tokens ni cookies completas.
