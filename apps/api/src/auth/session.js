@@ -8,11 +8,15 @@ function hashToken(token) {
 
 export function buildSessionCookieOptions(env, expiresAt) {
   const maxAgeSeconds = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
-  const isProduction = env.nodeEnv === "production";
+  const bases = [env.publicBaseUrl, env.authRedirectBaseUrl].filter(Boolean);
+  const joined = bases.join(" ").toLowerCase();
+  const isLocalhost = joined.includes("localhost") || joined.includes("127.0.0.1");
+  const isHttps = bases.some((base) => base.toLowerCase().startsWith("https://"));
+  const allowCrossSite = (env.nodeEnv === "production" || isHttps) && !isLocalhost;
   return {
     httpOnly: true,
-    sameSite: isProduction ? "none" : "lax",
-    secure: isProduction,
+    sameSite: allowCrossSite ? "none" : "lax",
+    secure: allowCrossSite,
     path: "/",
     expires: expiresAt,
     maxAge: maxAgeSeconds,
