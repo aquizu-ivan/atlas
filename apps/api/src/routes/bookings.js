@@ -1,10 +1,10 @@
-import cookie from "cookie";
 import express from "express";
 import { prisma } from "../prisma.js";
+import { env } from "../env.js";
 import { AppError } from "../errors/AppError.js";
 import { ERROR_CODES } from "../errors/errorCodes.js";
 import { badRequest, conflict, notFound, unauthenticated } from "../errors/httpErrors.js";
-import { readSession, SESSION_COOKIE_NAME } from "../auth/session.js";
+import { getSessionToken, readSession } from "../auth/session.js";
 import {
   buildSlots,
   datePartsFromIso,
@@ -15,8 +15,7 @@ import {
 const router = express.Router();
 
 async function requireSession(prismaClient, req) {
-  const cookies = cookie.parse(req.headers.cookie || "");
-  const token = cookies[SESSION_COOKIE_NAME];
+  const token = getSessionToken(req, env);
   if (!token) {
     throw unauthenticated("Necesitas iniciar sesion.");
   }

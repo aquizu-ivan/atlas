@@ -37,12 +37,19 @@ Precondicion: AUTH_DEV_LINKS=true para mostrar acceso DEV en UI.
 1) Abrir https://aquizu-ivan.github.io/atlas/ y confirmar Health Online.
 2) En Auth, usar request-link con email demo.
 3) Si AUTH_DEV_LINKS=true, debe aparecer un acceso DEV con botones Copiar/Abrir.
-4) Abrir el link recibido (email o acceso DEV) y verificar redirect a /atlas/?auth=success.
+4) Abrir el link recibido (email o acceso DEV) y verificar redirect a /atlas/?auth=success o /atlas/#auth=success&devToken=TOKEN.
 4) "Refrescar" debe mostrar Sesion activa con email.
 5) Logout y luego "Refrescar" debe mostrar "Necesitas iniciar sesion".
 6) DevTools -> Application -> Cookies:
    - Debe existir atlas_session con Secure=true y SameSite=None.
    - La cookie es HttpOnly y no debe ser visible en JS.
+
+Fallback DEV (cookies bloqueadas):
+1) Abrir Pages y enviar request-link.
+2) Abrir devLink -> vuelve a /atlas/#auth=success&devToken=TOKEN.
+3) La UI guarda devToken en sessionStorage y limpia el hash.
+4) Refrescar sesion -> 200 usando Authorization: Bearer devToken.
+5) Reservar y ver Mis reservas sin 401.
 
 ## Booking Flow (Web)
 1) Health online en Pages.
@@ -98,6 +105,7 @@ Evidencia esperada:
 Nota:
 - No se exponen tokens ni cookies completas.
 - En prod, devLink solo aparece si AUTH_DEV_LINKS=true; si no, el flujo requiere email real.
+- El fallback devToken solo funciona cuando AUTH_DEV_LINKS=true.
 
 ## QA Web local
 - pnpm -r run build

@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import cookie from "cookie";
 
 const SESSION_COOKIE_NAME = "atlas_session";
 
@@ -62,6 +63,22 @@ export async function readSession(prisma, token) {
       },
     },
   });
+}
+
+export function getSessionToken(req, env) {
+  const cookies = cookie.parse(req.headers.cookie || "");
+  const cookieToken = cookies[SESSION_COOKIE_NAME];
+  if (cookieToken) {
+    return cookieToken;
+  }
+  if (!env?.authDevLinks) {
+    return "";
+  }
+  const headerValue = req.headers.authorization || "";
+  if (!headerValue.toLowerCase().startsWith("bearer ")) {
+    return "";
+  }
+  return headerValue.slice(7).trim();
 }
 
 export async function clearSession(prisma, token) {
