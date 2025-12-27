@@ -47,8 +47,8 @@ Secuencia de verificacion en local, en orden canonico:
 3) Servicios cargan (select habilitado).
 4) Elegir servicio + fecha -> disponibilidad carga.
 5) Click en slot -> booking OK o 409 controlado.
-6) Mis reservas lista y permite cancelar.
-7) Cancel OK y refresca lista.
+6) Mis reservas lista y permite cancelar (orden startAt desc).
+7) Cancel OK y refresca lista (idempotente si ya estaba cancelada).
 
 Nota: si los endpoints de servicios/disponibilidad/reservas no existen, la UI muestra "Not available yet" sin romper.
 
@@ -70,6 +70,9 @@ Disponibilidad con Origin:
 
 Nota de disponibilidad:
 - Slots cada 30 min entre 09:00 y 17:00 UTC para la fecha solicitada.
+
+Bookings/me sin sesion (espera 401):
+- curl -i -H "Origin: https://aquizu-ivan.github.io" https://atlas-atlas.up.railway.app/api/bookings/me
 
 ## QA Tecnico (script reproducible)
 Script sin dependencias externas:
