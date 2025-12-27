@@ -6,6 +6,7 @@ import { errorHandler } from "./errors/errorHandler.js";
 import { notFound } from "./errors/httpErrors.js";
 import { bookingsRouter } from "./routes/bookings.js";
 import { authRouter } from "./routes/auth.js";
+import { servicesRouter } from "./routes/services.js";
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.get("/api/health", healthHandler);
+app.use("/api", servicesRouter);
 app.use("/api/bookings", bookingsRouter);
 app.use("/api/auth", authRouter);
 

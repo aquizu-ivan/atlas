@@ -62,6 +62,15 @@ Preflight:
 Session con cookie (manual):
 - curl -i -H "Origin: https://aquizu-ivan.github.io" -H "Cookie: atlas_session=ATLAS_SESSION_AQUI" https://atlas-atlas.up.railway.app/api/auth/session
 
+Servicios con Origin:
+- curl -i -H "Origin: https://aquizu-ivan.github.io" https://atlas-atlas.up.railway.app/api/services
+
+Disponibilidad con Origin:
+- curl -i -H "Origin: https://aquizu-ivan.github.io" "https://atlas-atlas.up.railway.app/api/availability?serviceId=svc_basic&date=2025-12-27"
+
+Nota de disponibilidad:
+- Slots cada 30 min entre 09:00 y 17:00 UTC para la fecha solicitada.
+
 ## QA Tecnico (script reproducible)
 Script sin dependencias externas:
 - pnpm run qa:exhibicion
