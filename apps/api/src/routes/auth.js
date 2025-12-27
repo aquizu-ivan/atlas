@@ -11,6 +11,7 @@ import {
   buildSessionCookieOptions,
   clearSession,
   createSession,
+  getSessionToken,
   readSession,
   SESSION_COOKIE_NAME,
 } from "../auth/session.js";
@@ -45,8 +46,15 @@ function resolveRedirectBaseUrl() {
   return env.authRedirectBaseUrl || "";
 }
 
-function redirectUrl(status) {
+function redirectUrl(status, devToken) {
   const base = resolveRedirectBaseUrl();
+  if (!base) {
+    return "";
+  }
+  if (devToken) {
+    const baseWithSlash = joinUrl(base, "/");
+    return `${baseWithSlash}#auth=${status}&devToken=${encodeURIComponent(devToken)}`;
+  }
   return joinUrl(base, `/?auth=${status}`);
 }
 
@@ -174,6 +182,9 @@ router.get("/consume", async (req, res, next) => {
 
     if (html) {
       if (redirectBase) {
+        if (env.authDevLinks) {
+          return res.redirect(302, redirectUrl("success", session.token));
+        }
         return res.redirect(302, redirectUrl("success"));
       }
     }
@@ -194,8 +205,7 @@ router.get("/session", async (req, res, next) => {
     return next(new AppError(503, ERROR_CODES.INTERNAL_ERROR, "Database not configured", { configured: false }));
   }
 
-  const cookies = cookie.parse(req.headers.cookie || "");
-  const token = cookies[SESSION_COOKIE_NAME];
+  const token = getSessionToken(req, env);
   if (!token) {
     return next(unauthenticated("Necesitas iniciar sesion."));
   }
@@ -225,8 +235,7 @@ router.post("/logout", async (req, res, next) => {
     return next(new AppError(503, ERROR_CODES.INTERNAL_ERROR, "Database not configured", { configured: false }));
   }
 
-  const cookies = cookie.parse(req.headers.cookie || "");
-  const token = cookies[SESSION_COOKIE_NAME];
+  const token = getSessionToken(req, env);
   if (!token) {
     return next(unauthenticated("Necesitas iniciar sesion."));
   }

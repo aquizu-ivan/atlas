@@ -57,6 +57,7 @@ const apiOrigin = normalizeOrigin(rawApiBase);
 const healthUrl = `${apiOrigin}/api/health`;
 const authBaseUrl = `${apiOrigin}/api/auth`;
 const apiBaseUrl = `${apiOrigin}/api`;
+const devTokenStorageKey = "atlas_dev_token";
 
 apiEl.textContent = healthUrl;
 
@@ -171,6 +172,46 @@ function setBookingSummary(message) {
 
 function setBookingConfirmation(message) {
   bookingConfirmationEl.textContent = message;
+}
+
+function getStoredDevToken() {
+  try {
+    return sessionStorage.getItem(devTokenStorageKey) || "";
+  } catch {
+    return "";
+  }
+}
+
+function setStoredDevToken(token) {
+  try {
+    if (!token) {
+      sessionStorage.removeItem(devTokenStorageKey);
+      return;
+    }
+    sessionStorage.setItem(devTokenStorageKey, token);
+  } catch {
+    // Ignore storage errors.
+  }
+}
+
+function buildAuthHeaders(headers = {}) {
+  const token = getStoredDevToken();
+  if (!token) {
+    return headers;
+  }
+  return {
+    ...headers,
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+function authFetch(url, options = {}) {
+  const headers = buildAuthHeaders(options.headers || {});
+  return fetch(url, {
+    ...options,
+    headers,
+    credentials: "include",
+  });
 }
 
 function formatStatus(status) {
@@ -373,9 +414,7 @@ async function refreshSession() {
   setAuthMessage("Verificando sesion...");
 
   try {
-    const response = await fetch(`${authBaseUrl}/session`, {
-      credentials: "include",
-    });
+    const response = await authFetch(`${authBaseUrl}/session`);
     const data = await response.json().catch(() => null);
 
     if (response.ok && data && data.ok) {
@@ -385,6 +424,7 @@ async function refreshSession() {
     }
 
     if (response.status === 401) {
+      setStoredDevToken("");
       setSessionState(false, null);
       setAuthMessage("Necesitas iniciar sesion");
       return;
@@ -404,19 +444,20 @@ async function logout() {
   setAuthMessage("Cerrando sesion...");
 
   try {
-    const response = await fetch(`${authBaseUrl}/logout`, {
+    const response = await authFetch(`${authBaseUrl}/logout`, {
       method: "POST",
-      credentials: "include",
     });
     const data = await response.json().catch(() => null);
 
     if (response.ok && data && data.ok) {
+      setStoredDevToken("");
       setSessionState(false, null);
       setAuthMessage(data.data?.message || "Sesion cerrada");
       return;
     }
 
     if (response.status === 401) {
+      setStoredDevToken("");
       setSessionState(false, null);
       setAuthMessage("Necesitas iniciar sesion");
       return;
@@ -596,10 +637,9 @@ async function createBooking() {
   setButtonLoading(bookingConfirmBtn, true);
 
   try {
-    const response = await fetch(apiEndpoint("/bookings"), {
+    const response = await authFetch(apiEndpoint("/bookings"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({
         serviceId: selectedServiceId,
         startAt: selectedSlot,
@@ -662,9 +702,7 @@ async function loadBookings() {
   toggleRetry(bookingsRetryBtn, false);
 
   try {
-    const response = await fetch(apiEndpoint("/bookings/me"), {
-      credentials: "include",
-    });
+    const response = await authFetch(apiEndpoint("/bookings/me"));
     const data = await response.json().catch(() => null);
 
     if (response.status === 401) {
@@ -733,9 +771,8 @@ async function cancelBooking(bookingId) {
   setBookingsCta(null, false);
   toggleRetry(bookingsRetryBtn, false);
   try {
-    const response = await fetch(apiEndpoint(`/bookings/${bookingId}/cancel`), {
+    const response = await authFetch(apiEndpoint(`/bookings/${bookingId}/cancel`), {
       method: "POST",
-      credentials: "include",
     });
     const data = await response.json().catch(() => null);
 
@@ -812,15 +849,50 @@ function handleAuthQuery() {
   return auth;
 }
 
+function handleAuthHash() {
+  const rawHash = window.location.hash.replace(/^#/, "");
+  if (!rawHash) {
+    return null;
+  }
+
+  const params = new URLSearchParams(rawHash);
+  const auth = params.get("auth");
+  const devToken = params.get("devToken");
+
+  if (devToken) {
+    setStoredDevToken(devToken);
+    setAuthMessage("Sesion activada (DEV)");
+    setHelperMessage("Ya puedes usar tu sesion.");
+  }
+
+  if (auth === "success" && !devToken) {
+    setAuthMessage("Sesion activa");
+    setHelperMessage("Ya puedes usar tu sesion.");
+  } else if (auth === "error") {
+    setStoredDevToken("");
+    setAuthMessage("No pudimos iniciar sesion.");
+    setHelperMessage("El link puede estar expirado o invalido.");
+    setSessionState(false, null);
+  }
+
+  params.delete("auth");
+  params.delete("devToken");
+  const nextHash = params.toString();
+  const nextUrl = `${window.location.pathname}${window.location.search}${nextHash ? `#${nextHash}` : ""}`;
+  window.history.replaceState({}, "", nextUrl);
+  return auth || (devToken ? "success" : null);
+}
+
 setHelperMessage("Usa tu email para recibir un link.");
 setDevLinkState(null);
 clearAvailability();
 setServicesState("Cargando...");
 setBookingsState("Cargando...");
 
-const authQuery = handleAuthQuery();
+const authHash = handleAuthHash();
+const authQuery = authHash ? null : handleAuthQuery();
 loadHealth();
-if (authQuery === "success" || !authQuery) {
+if (authHash === "success" || authQuery === "success" || (!authHash && !authQuery)) {
   refreshSession();
 }
 loadServices();
