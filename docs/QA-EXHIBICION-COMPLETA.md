@@ -59,6 +59,8 @@ Fallback DEV (cookies bloqueadas):
 5) Seleccionar slot -> confirmar reserva -> booking OK o 409 controlado.
 6) Mis reservas lista y permite cancelar (orden startAt desc).
 7) Cancel OK y refresca lista (idempotente si ya estaba cancelada).
+8) Deep link: abrir /atlas/?service=focus&date=YYYY-MM-DD y precarga servicio+fecha.
+9) Presets: Hoy / Manana / Prox. 7 dias actualizan fecha y URL sin recargar.
 
 Nota: si los endpoints de servicios/disponibilidad/reservas no existen, la UI muestra "Not available yet" sin romper.
 

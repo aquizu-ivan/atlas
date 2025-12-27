@@ -251,6 +251,18 @@ h1 {
   gap: 10px;
 }
 
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-button {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
 .slot-button {
   text-align: center;
 }

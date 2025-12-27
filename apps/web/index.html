@@ -85,6 +85,11 @@
           <div class="card">
             <div class="label">Paso 2: Fecha</div>
             <input class="field" type="date" data-booking-date aria-label="Selecciona una fecha" disabled />
+            <div class="preset-row">
+              <button class="button ghost preset-button" type="button" data-date-today>Hoy</button>
+              <button class="button ghost preset-button" type="button" data-date-tomorrow>Manana</button>
+              <button class="button ghost preset-button" type="button" data-date-week>Prox. 7 dias</button>
+            </div>
             <div class="note" data-availability-state>Selecciona servicio y fecha</div>
             <div class="slots" data-availability-slots></div>
             <button class="button ghost" type="button" data-availability-retry disabled>Reintentar</button>
