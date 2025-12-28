@@ -113,15 +113,19 @@
         <p class="panel-copy">Consulta tus reservas activas y tu historial en un vistazo.</p>
         <details class="history history-active accordion-premium" data-bookings-active open>
           <summary class="history-summary accordion-summary" data-bookings-active-summary>Activas (0)</summary>
-          <div class="note" data-bookings-state aria-live="polite">Cargando...</div>
-          <div class="note" data-bookings-cta aria-live="polite"></div>
-          <div class="booking-list" data-bookings-active-list></div>
-          <button class="button ghost" type="button" data-bookings-retry disabled>Reintentar</button>
+          <div class="accordion-body">
+            <div class="note" data-bookings-state aria-live="polite">Cargando...</div>
+            <div class="note" data-bookings-cta aria-live="polite"></div>
+            <div class="booking-list" data-bookings-active-list></div>
+            <button class="button ghost" type="button" data-bookings-retry disabled>Reintentar</button>
+          </div>
         </details>
         <details class="history history-muted accordion-premium" data-bookings-history>
           <summary class="history-summary accordion-summary" data-bookings-history-summary>Historial (0)</summary>
-          <div class="note" data-bookings-history-state aria-live="polite"></div>
-          <div class="booking-list history-list" data-bookings-history-list></div>
+          <div class="accordion-body">
+            <div class="note" data-bookings-history-state aria-live="polite"></div>
+            <div class="booking-list history-list" data-bookings-history-list></div>
+          </div>
         </details>
       </section>
       <section class="panel" id="admin-panel" data-panel-admin aria-busy="false">
@@ -135,58 +139,66 @@
         <div class="admin-body" data-admin-body hidden>
           <details class="admin-section accordion-premium admin-access" open>
             <summary class="admin-summary accordion-summary">Acceso admin</summary>
-            <div class="card admin-card">
-              <div class="note" data-admin-status aria-live="polite">Acceso restringido.</div>
-              <div class="note" data-admin-access-note aria-live="polite">Solo para administracion.</div>
-              <div class="auth-row">
-                <input class="field" type="password" placeholder="Token admin" data-admin-token />
-                <button class="button" type="button" data-admin-connect>Conectar</button>
+            <div class="accordion-body">
+              <div class="card admin-card">
+                <div class="note" data-admin-status aria-live="polite">Acceso restringido.</div>
+                <div class="note" data-admin-access-note aria-live="polite">Solo para administracion.</div>
+                <div class="auth-row">
+                  <input class="field" type="password" placeholder="Token admin" data-admin-token />
+                  <button class="button" type="button" data-admin-connect>Conectar</button>
+                </div>
               </div>
             </div>
           </details>
           <div class="admin-panels" data-admin-panels hidden>
             <details class="admin-section accordion-premium" data-admin-agenda-section open>
               <summary class="admin-summary accordion-summary" data-admin-agenda-summary>Agenda</summary>
-              <div class="card admin-card">
-                <div class="label">Agenda</div>
-                <div class="note admin-subcopy">Reservas del dia.</div>
-                <input class="field" type="date" data-admin-date aria-label="Fecha agenda" />
-                <div class="note" data-admin-agenda-state aria-live="polite"></div>
-                <div class="booking-list" data-admin-agenda-list></div>
-                <button class="button ghost" type="button" data-admin-agenda-retry disabled>Reintentar</button>
+              <div class="accordion-body">
+                <div class="card admin-card">
+                  <div class="label">Agenda</div>
+                  <div class="note admin-subcopy">Reservas del dia.</div>
+                  <input class="field" type="date" data-admin-date aria-label="Fecha agenda" />
+                  <div class="note" data-admin-agenda-state aria-live="polite"></div>
+                  <div class="booking-list" data-admin-agenda-list></div>
+                  <button class="button ghost" type="button" data-admin-agenda-retry disabled>Reintentar</button>
+                </div>
               </div>
             </details>
             <details class="admin-section accordion-premium" data-admin-users-section>
               <summary class="admin-summary accordion-summary" data-admin-users-summary>Usuarios</summary>
-              <div class="card admin-card">
-                <div class="label">Usuarios</div>
-                <div class="note admin-subcopy">Lista simple de cuentas.</div>
-                <div class="note" data-admin-users-state aria-live="polite"></div>
-                <div class="booking-list" data-admin-users-list></div>
-                <button class="button ghost" type="button" data-admin-users-retry disabled>Reintentar</button>
+              <div class="accordion-body">
+                <div class="card admin-card">
+                  <div class="label">Usuarios</div>
+                  <div class="note admin-subcopy">Lista simple de cuentas.</div>
+                  <div class="note" data-admin-users-state aria-live="polite"></div>
+                  <div class="booking-list" data-admin-users-list></div>
+                  <button class="button ghost" type="button" data-admin-users-retry disabled>Reintentar</button>
+                </div>
               </div>
             </details>
             <details class="admin-section accordion-premium" data-admin-services-section>
               <summary class="admin-summary accordion-summary" data-admin-services-summary>Servicios</summary>
-              <div class="card admin-card">
-                <div class="label">Servicios</div>
-                <div class="note">Crea y ajusta servicios.</div>
-                <div class="note" data-admin-services-state aria-live="polite"></div>
-                <div class="booking-list" data-admin-services-list></div>
-                <div class="admin-form">
-                  <input class="field" type="text" placeholder="Nombre del servicio" data-admin-service-name />
-                  <input class="field" type="number" min="10" max="240" placeholder="Duracion (min)" data-admin-service-duration />
-                  <label class="note admin-toggle">
-                    <input type="checkbox" data-admin-service-active checked />
-                    Activo
-                  </label>
-                  <div class="button-row">
-                    <button class="button" type="button" data-admin-service-save>Guardar</button>
-                    <button class="button ghost" type="button" data-admin-service-reset>Limpiar</button>
+              <div class="accordion-body">
+                <div class="card admin-card">
+                  <div class="label">Servicios</div>
+                  <div class="note">Crea y ajusta servicios.</div>
+                  <div class="note" data-admin-services-state aria-live="polite"></div>
+                  <div class="booking-list" data-admin-services-list></div>
+                  <div class="admin-form">
+                    <input class="field" type="text" placeholder="Nombre del servicio" data-admin-service-name />
+                    <input class="field" type="number" min="10" max="240" placeholder="Duracion (min)" data-admin-service-duration />
+                    <label class="note admin-toggle">
+                      <input type="checkbox" data-admin-service-active checked />
+                      Activo
+                    </label>
+                    <div class="button-row">
+                      <button class="button" type="button" data-admin-service-save>Guardar</button>
+                      <button class="button ghost" type="button" data-admin-service-reset>Limpiar</button>
+                    </div>
+                    <div class="note" data-admin-services-message aria-live="polite"></div>
                   </div>
-                  <div class="note" data-admin-services-message aria-live="polite"></div>
+                  <button class="button ghost" type="button" data-admin-services-retry disabled>Reintentar</button>
                 </div>
-                <button class="button ghost" type="button" data-admin-services-retry disabled>Reintentar</button>
               </div>
             </details>
           </div>
@@ -194,7 +206,7 @@
       </section>
       <details class="panel system-panel accordion-premium" data-panel-health aria-busy="false">
         <summary class="system-summary accordion-summary">Estado del sistema</summary>
-        <div class="system-body">
+        <div class="system-body accordion-body">
           <p class="panel-copy">Diagnostico tecnico para soporte y QA.</p>
           <div class="status">
             <span class="dot" data-dot></span>
