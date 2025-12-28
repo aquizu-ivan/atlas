@@ -162,10 +162,10 @@ Checklist limpieza de ruido:
 - No hay URLs ni diagnosticos fuera de "Estado del sistema".
 - Labels tecnicos solo dentro de "Estado del sistema" o Modo admin.
 
-## TICKET-31 — Premium UI Pass
-1) Zoom 125% y 150%: Auth y Admin sin encimados (inputs + botones con wrap limpio).
-2) Reservar: lista de horarios con scroll interno (no estira infinito).
-3) Confirmar: panel con resumen y CTA centrada, sin vacios.
-4) Mis reservas: Activas/Historial con jerarquia clara y sin encimados.
-5) Admin: modo entendible (Acceso arriba; resto solo si conectado).
+## TICKET-31 - Premium UI Pass
+1) Zoom 100% / 125% / 150%: filas de Auth/Admin sin solapes.
+2) Paso 1: sin ruido cuando hay seleccion; hint solo si falta servicio.
+3) Paso 3: resumen con Servicio/Fecha/Hora y CTA full width.
+4) Mis reservas: Activas/Historial plegables con hover suave en cards.
+5) Admin: secciones plegables + usuarios muestran Alta (dd/mm/aaaa).
 6) Estado del sistema sigue colapsado y sin ruido en plano usuario.

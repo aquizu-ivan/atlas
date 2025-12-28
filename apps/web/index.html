@@ -52,13 +52,20 @@
         <div class="subsection">
           <div class="subsection-title">Tu horario</div>
           <div class="booking-grid">
-          <div class="card">
+          <div class="card service-card" data-services-card data-has-selection="false">
             <div class="label">Paso 1: Servicio</div>
             <div class="note" data-services-state aria-live="polite">Cargando...</div>
+            <div class="summary-card summary-card--compact" data-services-summary hidden>
+              <div class="summary-title">Servicio seleccionado</div>
+              <div class="summary-main" data-services-summary-name>—</div>
+              <div class="summary-meta" data-services-summary-duration-row>
+                <span data-services-summary-duration>Duracion: —</span>
+              </div>
+            </div>
             <select class="field" data-services-select aria-label="Selecciona un servicio" disabled>
               <option value="">Selecciona un servicio</option>
             </select>
-            <div class="note" data-services-empty aria-live="polite">--</div>
+            <div class="note hint" data-services-hint aria-live="polite">Elegi un servicio para ver horarios.</div>
             <button class="button ghost" type="button" data-services-retry disabled>Reintentar</button>
           </div>
           <div class="card">
@@ -75,15 +82,28 @@
           </div>
           <div class="card">
             <div class="label">Paso 3: Confirmar</div>
-            <div class="confirm-box">
-              <div class="note">Resumen</div>
-              <div class="note" data-booking-summary aria-live="polite">Selecciona un horario</div>
-              <div class="note" data-booking-message aria-live="polite">--</div>
+            <div class="summary-card">
+              <div class="summary-title">Resumen</div>
+              <div class="summary-list">
+                <div class="summary-row kv">
+                  <span class="summary-label kv-label">Servicio</span>
+                  <span class="summary-value kv-value" data-booking-summary-service>&mdash;</span>
+                </div>
+                <div class="summary-row kv">
+                  <span class="summary-label kv-label">Fecha</span>
+                  <span class="summary-value kv-value" data-booking-summary-date>&mdash;</span>
+                </div>
+                <div class="summary-row kv">
+                  <span class="summary-label kv-label">Hora</span>
+                  <span class="summary-value kv-value" data-booking-summary-time>&mdash;</span>
+                </div>
+              </div>
             </div>
+            <div class="note" data-booking-message aria-live="polite"></div>
             <div class="confirm-actions">
-              <button class="button" type="button" data-booking-confirm disabled>Confirmar reserva</button>
+              <button class="button cta" type="button" data-booking-confirm disabled>Confirmar reserva</button>
             </div>
-            <div class="note" data-booking-confirmation aria-live="polite">--</div>
+            <div class="note" data-booking-confirmation aria-live="polite"></div>
           </div>
           </div>
         </div>
@@ -91,16 +111,18 @@
       <section class="panel" id="bookings-panel" data-panel-bookings aria-busy="false">
         <div class="panel-title">Mis reservas</div>
         <p class="panel-copy">Consulta tus reservas activas y tu historial en un vistazo.</p>
-        <div class="note" data-bookings-state aria-live="polite">Cargando...</div>
-        <div class="note" data-bookings-cta aria-live="polite">--</div>
-        <div class="subsection-title">Activas</div>
-        <div class="booking-list" data-bookings-active-list></div>
-        <details class="history" data-bookings-history>
-          <summary class="history-summary">Historial</summary>
-          <div class="note" data-bookings-history-state aria-live="polite">--</div>
+        <details class="history history-active" data-bookings-active open>
+          <summary class="history-summary" data-bookings-active-summary>Activas (0)</summary>
+          <div class="note" data-bookings-state aria-live="polite">Cargando...</div>
+          <div class="note" data-bookings-cta aria-live="polite"></div>
+          <div class="booking-list" data-bookings-active-list></div>
+          <button class="button ghost" type="button" data-bookings-retry disabled>Reintentar</button>
+        </details>
+        <details class="history history-muted" data-bookings-history>
+          <summary class="history-summary" data-bookings-history-summary>Historial (0)</summary>
+          <div class="note" data-bookings-history-state aria-live="polite"></div>
           <div class="booking-list history-list" data-bookings-history-list></div>
         </details>
-        <button class="button ghost" type="button" data-bookings-retry disabled>Reintentar</button>
       </section>
       <section class="panel" id="admin-panel" data-panel-admin aria-busy="false">
         <div class="panel-header">
@@ -121,26 +143,33 @@
             </div>
           </div>
           <div class="admin-panels" data-admin-panels hidden>
-            <div class="admin-grid">
-              <div class="card">
+            <details class="admin-section" data-admin-agenda-section open>
+              <summary class="admin-summary">Agenda</summary>
+              <div class="card admin-card">
                 <div class="label">Agenda</div>
-                <div class="note">Vista diaria de reservas.</div>
+                <div class="note admin-subcopy">Reservas del dia.</div>
                 <input class="field" type="date" data-admin-date aria-label="Fecha agenda" />
-                <div class="note" data-admin-agenda-state aria-live="polite">--</div>
+                <div class="note" data-admin-agenda-state aria-live="polite"></div>
                 <div class="booking-list" data-admin-agenda-list></div>
                 <button class="button ghost" type="button" data-admin-agenda-retry disabled>Reintentar</button>
               </div>
-              <div class="card">
+            </details>
+            <details class="admin-section" data-admin-users-section>
+              <summary class="admin-summary">Usuarios</summary>
+              <div class="card admin-card">
                 <div class="label">Usuarios</div>
-                <div class="note">Listado de usuarios activos.</div>
-                <div class="note" data-admin-users-state aria-live="polite">--</div>
+                <div class="note admin-subcopy">Lista simple de cuentas.</div>
+                <div class="note" data-admin-users-state aria-live="polite"></div>
                 <div class="booking-list" data-admin-users-list></div>
                 <button class="button ghost" type="button" data-admin-users-retry disabled>Reintentar</button>
               </div>
-              <div class="card">
+            </details>
+            <details class="admin-section" data-admin-services-section>
+              <summary class="admin-summary">Servicios</summary>
+              <div class="card admin-card">
                 <div class="label">Servicios</div>
                 <div class="note">Crea y ajusta servicios.</div>
-                <div class="note" data-admin-services-state aria-live="polite">--</div>
+                <div class="note" data-admin-services-state aria-live="polite"></div>
                 <div class="booking-list" data-admin-services-list></div>
                 <div class="admin-form">
                   <input class="field" type="text" placeholder="Nombre del servicio" data-admin-service-name />
@@ -153,11 +182,11 @@
                     <button class="button" type="button" data-admin-service-save>Guardar</button>
                     <button class="button ghost" type="button" data-admin-service-reset>Limpiar</button>
                   </div>
-                  <div class="note" data-admin-services-message aria-live="polite">--</div>
+                  <div class="note" data-admin-services-message aria-live="polite"></div>
                 </div>
                 <button class="button ghost" type="button" data-admin-services-retry disabled>Reintentar</button>
               </div>
-            </div>
+            </details>
           </div>
         </div>
       </section>
@@ -196,3 +225,4 @@
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
+
