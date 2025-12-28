@@ -67,9 +67,11 @@ const adminDateInput = document.querySelector("[data-admin-date]");
 const adminAgendaStateEl = document.querySelector("[data-admin-agenda-state]");
 const adminAgendaListEl = document.querySelector("[data-admin-agenda-list]");
 const adminAgendaRetryBtn = document.querySelector("[data-admin-agenda-retry]");
+const adminAgendaSummaryEl = document.querySelector("[data-admin-agenda-summary]");
 const adminUsersStateEl = document.querySelector("[data-admin-users-state]");
 const adminUsersListEl = document.querySelector("[data-admin-users-list]");
 const adminUsersRetryBtn = document.querySelector("[data-admin-users-retry]");
+const adminUsersSummaryEl = document.querySelector("[data-admin-users-summary]");
 const adminServicesStateEl = document.querySelector("[data-admin-services-state]");
 const adminServicesListEl = document.querySelector("[data-admin-services-list]");
 const adminServiceNameInput = document.querySelector("[data-admin-service-name]");
@@ -79,6 +81,7 @@ const adminServiceSaveBtn = document.querySelector("[data-admin-service-save]");
 const adminServiceResetBtn = document.querySelector("[data-admin-service-reset]");
 const adminServicesMessageEl = document.querySelector("[data-admin-services-message]");
 const adminServicesRetryBtn = document.querySelector("[data-admin-services-retry]");
+const adminServicesSummaryEl = document.querySelector("[data-admin-services-summary]");
 const adminModeToggleBtn = document.querySelector("[data-admin-mode-toggle]");
 const adminModeNoteEl = document.querySelector("[data-admin-mode-note]");
 const adminBodyEl = document.querySelector("[data-admin-body]");
@@ -282,6 +285,21 @@ function updateBookingSummaries(activeCount, historyCount) {
   }
   if (bookingsHistorySummaryEl) {
     bookingsHistorySummaryEl.textContent = `Historial (${historyCount})`;
+  }
+}
+
+function updateAdminSummaries(type, count) {
+  if (type === "agenda" && adminAgendaSummaryEl) {
+    const dateLabel = isValidDateString(adminDateInput?.value)
+      ? adminDateInput.value
+      : "--";
+    adminAgendaSummaryEl.textContent = `Agenda (${dateLabel})`;
+  }
+  if (type === "users" && adminUsersSummaryEl) {
+    adminUsersSummaryEl.textContent = `Usuarios (${count ?? 0})`;
+  }
+  if (type === "services" && adminServicesSummaryEl) {
+    adminServicesSummaryEl.textContent = `Servicios (${count ?? 0})`;
   }
 }
 
@@ -1476,6 +1494,7 @@ async function loadAdminAgenda() {
     if (adminPanelsEl) {
       adminPanelsEl.hidden = true;
     }
+    updateAdminSummaries("agenda", 0);
     setNoteLoading(adminAgendaStateEl, false);
     setBusy(adminPanel, false);
     return;
@@ -1483,6 +1502,7 @@ async function loadAdminAgenda() {
   const date = adminDateInput.value;
   if (!isValidDateString(date)) {
     setAdminAgendaState("Fecha invalida");
+    updateAdminSummaries("agenda", 0);
     setNoteLoading(adminAgendaStateEl, false);
     setBusy(adminPanel, false);
     return;
@@ -1495,6 +1515,7 @@ async function loadAdminAgenda() {
       setStoredAdminToken("");
       setAdminStatus("Acceso restringido.");
       setAdminAgendaState("Acceso restringido.");
+      updateAdminSummaries("agenda", 0);
       if (adminAccessNoteEl) {
         adminAccessNoteEl.textContent = "Solo para administracion.";
       }
@@ -1506,6 +1527,7 @@ async function loadAdminAgenda() {
     }
     if (!response.ok || !data || !data.ok) {
       setAdminAgendaState("No se pudo conectar");
+      updateAdminSummaries("agenda", 0);
       toggleRetry(adminAgendaRetryBtn, true);
       return;
     }
@@ -1513,6 +1535,7 @@ async function loadAdminAgenda() {
       adminPanelsEl.hidden = false;
     }
     const bookings = data?.data?.bookings || [];
+    updateAdminSummaries("agenda", bookings.length);
     if (!Array.isArray(bookings) || bookings.length === 0) {
       setAdminAgendaState("Sin reservas");
       return;
@@ -1568,6 +1591,7 @@ async function loadAdminUsers() {
     if (adminPanelsEl) {
       adminPanelsEl.hidden = true;
     }
+    updateAdminSummaries("users", 0);
     setNoteLoading(adminUsersStateEl, false);
     setBusy(adminPanel, false);
     return;
@@ -1580,6 +1604,7 @@ async function loadAdminUsers() {
       setStoredAdminToken("");
       setAdminStatus("Acceso restringido.");
       setAdminUsersState("Acceso restringido.");
+      updateAdminSummaries("users", 0);
       if (adminAccessNoteEl) {
         adminAccessNoteEl.textContent = "Solo para administracion.";
       }
@@ -1591,6 +1616,7 @@ async function loadAdminUsers() {
     }
     if (!response.ok || !data || !data.ok) {
       setAdminUsersState("No se pudo conectar");
+      updateAdminSummaries("users", 0);
       toggleRetry(adminUsersRetryBtn, true);
       return;
     }
@@ -1598,6 +1624,7 @@ async function loadAdminUsers() {
       adminPanelsEl.hidden = false;
     }
     const users = data?.data?.users || [];
+    updateAdminSummaries("users", Array.isArray(users) ? users.length : 0);
     if (!Array.isArray(users) || users.length === 0) {
       setAdminUsersState("Sin resultados");
       return;
@@ -1673,6 +1700,7 @@ async function loadAdminServices() {
     if (adminPanelsEl) {
       adminPanelsEl.hidden = true;
     }
+    updateAdminSummaries("services", 0);
     setNoteLoading(adminServicesStateEl, false);
     setBusy(adminPanel, false);
     return;
@@ -1685,6 +1713,7 @@ async function loadAdminServices() {
       setStoredAdminToken("");
       setAdminStatus("Acceso restringido.");
       setAdminServicesState("Acceso restringido.");
+      updateAdminSummaries("services", 0);
       if (adminAccessNoteEl) {
         adminAccessNoteEl.textContent = "Solo para administracion.";
       }
@@ -1696,6 +1725,7 @@ async function loadAdminServices() {
     }
     if (!response.ok || !data || !data.ok) {
       setAdminServicesState("No se pudo conectar");
+      updateAdminSummaries("services", 0);
       toggleRetry(adminServicesRetryBtn, true);
       return;
     }
@@ -1703,6 +1733,7 @@ async function loadAdminServices() {
       adminPanelsEl.hidden = false;
     }
     const services = data?.data?.services || [];
+    updateAdminSummaries("services", Array.isArray(services) ? services.length : 0);
     if (!Array.isArray(services) || services.length === 0) {
       setAdminServicesState("Sin servicios");
       return;
