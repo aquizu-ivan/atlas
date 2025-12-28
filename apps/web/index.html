@@ -12,10 +12,10 @@
         <h1>Connection Monitor</h1>
         <p class="subtitle">Healthy signal, calm interface, no console noise.</p>
       </header>
-      <section class="panel">
+      <section class="panel" data-panel-health aria-busy="false">
         <div class="status">
           <span class="dot" data-dot></span>
-          <span data-state>Loading</span>
+          <span data-state aria-live="polite">Loading</span>
         </div>
         <div class="grid">
           <div class="card">
@@ -36,7 +36,7 @@
           </div>
         </div>
       </section>
-      <section class="panel" id="auth-panel">
+      <section class="panel" id="auth-panel" data-panel-auth aria-busy="false">
         <div class="panel-title">Auth</div>
         <div class="auth-grid">
           <div class="card">
@@ -45,12 +45,12 @@
               <input class="field" type="email" placeholder="demo@atlas.local" data-auth-email />
               <button class="button" type="button" data-auth-request>Enviar link</button>
             </div>
-            <div class="note" data-auth-message>--</div>
+            <div class="note" data-auth-message aria-live="polite">--</div>
           </div>
           <div class="card">
             <div class="label">Sesion</div>
             <div class="value" data-auth-status>Offline</div>
-            <div class="note" data-auth-user>--</div>
+            <div class="note" data-auth-user aria-live="polite">--</div>
             <div class="button-row">
               <button class="button ghost" type="button" data-auth-refresh>Refrescar</button>
               <button class="button ghost" type="button" data-auth-logout>Logout</button>
@@ -58,28 +58,28 @@
           </div>
           <div class="card">
             <div class="label">Instrucciones</div>
-            <div class="note" data-auth-helper>Usa tu email para recibir un link.</div>
+            <div class="note" data-auth-helper aria-live="polite">Usa tu email para recibir un link.</div>
             <div class="devlink" data-auth-devlink hidden>
               <div class="auth-row devlink-row">
                 <input class="field" type="text" data-auth-devlink-input readonly />
                 <button class="button ghost" type="button" data-auth-devlink-copy>Copiar</button>
                 <button class="button" type="button" data-auth-devlink-open>Abrir</button>
               </div>
-              <div class="note" data-auth-helper-extra>Si el correo no llega, usa este acceso (DEV).</div>
+              <div class="note" data-auth-helper-extra aria-live="polite">Si el correo no llega, usa este acceso (DEV).</div>
             </div>
           </div>
         </div>
       </section>
-      <section class="panel" id="booking-panel">
+      <section class="panel" id="booking-panel" data-panel-booking aria-busy="false">
         <div class="panel-title">Reservar</div>
         <div class="booking-grid">
           <div class="card">
             <div class="label">Paso 1: Servicio</div>
-            <div class="note" data-services-state>Cargando...</div>
+            <div class="note" data-services-state aria-live="polite">Cargando...</div>
             <select class="field" data-services-select aria-label="Selecciona un servicio" disabled>
               <option value="">Selecciona un servicio</option>
             </select>
-            <div class="note" data-services-empty>--</div>
+            <div class="note" data-services-empty aria-live="polite">--</div>
             <button class="button ghost" type="button" data-services-retry disabled>Reintentar</button>
           </div>
           <div class="card">
@@ -90,32 +90,32 @@
               <button class="button ghost preset-button" type="button" data-date-tomorrow>Manana</button>
               <button class="button ghost preset-button" type="button" data-date-week>Prox. 7 dias</button>
             </div>
-            <div class="note" data-availability-state>Selecciona servicio y fecha</div>
+            <div class="note" data-availability-state aria-live="polite">Selecciona servicio y fecha</div>
             <div class="slots" data-availability-slots></div>
             <button class="button ghost" type="button" data-availability-retry disabled>Reintentar</button>
           </div>
           <div class="card">
             <div class="label">Paso 3: Confirmar</div>
-            <div class="note" data-booking-summary>Selecciona un horario</div>
+            <div class="note" data-booking-summary aria-live="polite">Selecciona un horario</div>
             <button class="button" type="button" data-booking-confirm disabled>Confirmar reserva</button>
-            <div class="note" data-booking-message>--</div>
-            <div class="note" data-booking-confirmation>--</div>
+            <div class="note" data-booking-message aria-live="polite">--</div>
+            <div class="note" data-booking-confirmation aria-live="polite">--</div>
           </div>
         </div>
       </section>
-      <section class="panel" id="bookings-panel">
+      <section class="panel" id="bookings-panel" data-panel-bookings aria-busy="false">
         <div class="panel-title">Mis reservas</div>
-        <div class="note" data-bookings-state>Cargando...</div>
-        <div class="note" data-bookings-cta>--</div>
+        <div class="note" data-bookings-state aria-live="polite">Cargando...</div>
+        <div class="note" data-bookings-cta aria-live="polite">--</div>
         <div class="booking-list" data-bookings-list></div>
         <button class="button ghost" type="button" data-bookings-retry disabled>Reintentar</button>
       </section>
-      <section class="panel" id="admin-panel">
+      <section class="panel" id="admin-panel" data-panel-admin aria-busy="false">
         <div class="panel-title">Admin</div>
         <div class="admin-grid">
           <div class="card">
             <div class="label">Acceso</div>
-            <div class="note" data-admin-status>Acceso restringido.</div>
+            <div class="note" data-admin-status aria-live="polite">Acceso restringido.</div>
             <div class="auth-row">
               <input class="field" type="password" placeholder="Token admin" data-admin-token />
               <button class="button" type="button" data-admin-connect>Conectar</button>
@@ -124,19 +124,19 @@
           <div class="card">
             <div class="label">Agenda</div>
             <input class="field" type="date" data-admin-date aria-label="Fecha agenda" />
-            <div class="note" data-admin-agenda-state>--</div>
+            <div class="note" data-admin-agenda-state aria-live="polite">--</div>
             <div class="booking-list" data-admin-agenda-list></div>
             <button class="button ghost" type="button" data-admin-agenda-retry disabled>Reintentar</button>
           </div>
           <div class="card">
             <div class="label">Usuarios</div>
-            <div class="note" data-admin-users-state>--</div>
+            <div class="note" data-admin-users-state aria-live="polite">--</div>
             <div class="booking-list" data-admin-users-list></div>
             <button class="button ghost" type="button" data-admin-users-retry disabled>Reintentar</button>
           </div>
           <div class="card">
             <div class="label">Servicios</div>
-            <div class="note" data-admin-services-state>--</div>
+            <div class="note" data-admin-services-state aria-live="polite">--</div>
             <div class="booking-list" data-admin-services-list></div>
             <div class="admin-form">
               <input class="field" type="text" placeholder="Nombre del servicio" data-admin-service-name />
@@ -149,7 +149,7 @@
                 <button class="button" type="button" data-admin-service-save>Guardar</button>
                 <button class="button ghost" type="button" data-admin-service-reset>Limpiar</button>
               </div>
-              <div class="note" data-admin-services-message>--</div>
+              <div class="note" data-admin-services-message aria-live="polite">--</div>
             </div>
             <button class="button ghost" type="button" data-admin-services-retry disabled>Reintentar</button>
           </div>
