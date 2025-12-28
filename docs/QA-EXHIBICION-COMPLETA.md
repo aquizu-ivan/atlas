@@ -175,3 +175,9 @@ Checklist limpieza de ruido:
 2) Acordeones: cue consistente (filete izquierdo + chevron) en Mis reservas/Admin/Estado del sistema.
 3) Mis reservas: Activas/Historial con aire y hover suave, sin ruido extra.
 4) Zoom 100% / 125% / 150% sin solapes en summaries e inputs.
+
+## TICKET-34 - Premium final
+1) Hover/active/disabled consistente en botones, slots y summaries.
+2) Admin compacto con listas contenidas (scroll suave en listas largas).
+3) Focus visible consistente en todos los elementos interactivos.
+4) Zoom 100% / 125% / 150% sin solapes.

@@ -271,7 +271,6 @@ h1 {
 
 .accordion-premium {
   position: relative;
-  overflow: hidden;
 }
 
 .accordion-summary {
@@ -328,6 +327,31 @@ h1 {
 .accordion-summary:focus-visible {
   outline: none;
   box-shadow: var(--ring);
+}
+
+.accordion-summary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.accordion-body {
+  display: grid;
+  gap: 12px;
+  padding-top: 10px;
+  max-height: 1200px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height var(--t) var(--ease), opacity var(--t) var(--ease), transform var(--t) var(--ease);
+}
+
+.accordion-premium:not([open]) > .accordion-body {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  visibility: hidden;
+  pointer-events: none;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .label {
@@ -504,6 +528,22 @@ h1 {
   padding-right: 4px;
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
+  border: 1px solid rgba(32, 40, 58, 0.6);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.slots-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.slots-scroll::-webkit-scrollbar-thumb {
+  background: rgba(111, 214, 255, 0.18);
+  border-radius: 999px;
+}
+
+.slots-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .preset-row {
@@ -637,6 +677,28 @@ h1 {
   gap: 12px;
 }
 
+[data-admin-agenda-list],
+[data-admin-users-list],
+[data-admin-services-list] {
+  max-height: 260px;
+  overflow: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+[data-admin-agenda-list]::-webkit-scrollbar,
+[data-admin-users-list]::-webkit-scrollbar,
+[data-admin-services-list]::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-admin-agenda-list]::-webkit-scrollbar-thumb,
+[data-admin-users-list]::-webkit-scrollbar-thumb,
+[data-admin-services-list]::-webkit-scrollbar-thumb {
+  background: rgba(111, 214, 255, 0.14);
+  border-radius: 999px;
+}
+
 .booking-item {
   display: grid;
   gap: 8px;
@@ -752,13 +814,6 @@ h1 {
   display: none;
 }
 
-.history-summary:focus-visible,
-.system-summary:focus-visible,
-.admin-summary:focus-visible {
-  outline: none;
-  box-shadow: var(--ring);
-}
-
 .slot-button:focus-visible {
   box-shadow: var(--ring);
 }
@@ -773,6 +828,11 @@ h1 {
   padding: 0 var(--panel-pad) var(--panel-pad);
   display: grid;
   gap: 16px;
+}
+
+.accordion-premium:not([open]) > .system-body {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 @media (max-width: 640px) {
