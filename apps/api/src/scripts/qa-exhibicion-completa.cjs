@@ -119,6 +119,8 @@ async function main() {
   const results = [];
   let serviceIdForAvailability = "svc_basic";
   let slotForBooking = "";
+  let devTokenForBooking = "";
+  let bookingIdForAdmin = "";
 
   // Check A: Health ok
   try {
@@ -372,6 +374,7 @@ async function main() {
       });
       const location = headerValue(consumeRes.headers, "location");
       const devToken = extractDevToken(location);
+      devTokenForBooking = devToken;
 
       if (!devToken) {
         results.push({
@@ -392,7 +395,15 @@ async function main() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${devToken}`,
         }, payload);
-        const ok = [200, 201, 409].includes(res.status) && isCorsAllowed(res.headers, pagesOrigin);
+        let ok = [200, 201, 409].includes(res.status) && isCorsAllowed(res.headers, pagesOrigin);
+        if (res.status === 200 || res.status === 201) {
+          try {
+            const created = JSON.parse(res.body);
+            bookingIdForAdmin = created?.data?.booking?.id || "";
+          } catch {
+            ok = false;
+          }
+        }
         results.push({
           name: "bookings-post-auth",
           ok,
@@ -422,7 +433,7 @@ async function main() {
       skipped: true,
       reason: "Skipped (ADMIN_ACCESS_TOKEN not set)",
     });
-  } else {
+    } else {
     try {
       const serviceName = `QA Service ${Date.now()}`;
       const payload = JSON.stringify({
@@ -468,10 +479,45 @@ async function main() {
           headers: listRes.headers,
           reason: ok ? "" : "Expected new service visible in /api/services",
         });
+        if (bookingIdForAdmin && devTokenForBooking) {
+          const confirmRes = await request("PATCH", `${apiOrigin}/api/admin/bookings/${bookingIdForAdmin}/confirm`, {
+            Authorization: `Bearer ${adminToken}`,
+          });
+          let confirmOk = confirmRes.status === 200;
+          try {
+            const data = JSON.parse(confirmRes.body);
+            confirmOk = confirmOk && data?.data?.booking?.status === "CONFIRMED";
+          } catch {
+            confirmOk = false;
+          }
+          results.push({
+            name: "admin-booking-confirm",
+            ok: confirmOk,
+            status: confirmRes.status,
+            headers: confirmRes.headers,
+            reason: confirmOk ? "" : "Expected status CONFIRMED from admin confirm",
+          });
+        } else {
+          results.push({
+            name: "admin-booking-confirm",
+            ok: true,
+            status: 0,
+            headers: {},
+            skipped: true,
+            reason: "Skipped (no booking or dev token)",
+          });
+        }
       }
     } catch {
       results.push({
         name: "admin-services",
+        ok: false,
+        status: 0,
+        headers: {},
+        reason: "Network error",
+      });
+      results.push({
+        name: "admin-booking-confirm",
         ok: false,
         status: 0,
         headers: {},

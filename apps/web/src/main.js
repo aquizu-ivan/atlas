@@ -41,7 +41,10 @@ const bookingMessageEl = document.querySelector("[data-booking-message]");
 const bookingConfirmationEl = document.querySelector("[data-booking-confirmation]");
 const bookingsStateEl = document.querySelector("[data-bookings-state]");
 const bookingsCtaEl = document.querySelector("[data-bookings-cta]");
-const bookingsListEl = document.querySelector("[data-bookings-list]");
+const bookingsActiveListEl = document.querySelector("[data-bookings-active-list]");
+const bookingsHistoryEl = document.querySelector("[data-bookings-history]");
+const bookingsHistoryStateEl = document.querySelector("[data-bookings-history-state]");
+const bookingsHistoryListEl = document.querySelector("[data-bookings-history-list]");
 const bookingsRetryBtn = document.querySelector("[data-bookings-retry]");
 const healthPanel = document.querySelector("[data-panel-health]");
 const authPanel = document.querySelector("[data-panel-auth]");
@@ -188,6 +191,12 @@ function setBookingMessage(message) {
 
 function setBookingsState(message) {
   bookingsStateEl.textContent = message;
+}
+
+function setBookingsHistoryState(message) {
+  if (bookingsHistoryStateEl) {
+    bookingsHistoryStateEl.textContent = message;
+  }
 }
 
 function setButtonLoading(button, isLoading) {
@@ -368,8 +377,12 @@ function formatStatus(status) {
   const normalized = String(status).toUpperCase();
   if (normalized === "CONFIRMED") return "Confirmada";
   if (normalized === "CANCELED") return "Cancelada";
-  if (normalized === "PENDING") return "Pendiente";
+  if (normalized === "PENDING") return "Pendiente (a confirmar)";
   return normalized;
+}
+
+function shouldShowHistoryOpen(hasActive) {
+  return !hasActive;
 }
 
 function describeError(response, data) {
@@ -421,6 +434,48 @@ function formatDateCompact(value) {
     return "--";
   }
   return date.toISOString().replace("T", " ").slice(0, 16);
+}
+
+async function adminUpdateBooking(bookingId, action) {
+  if (!bookingId) {
+    setAdminAgendaState("Datos invalidos.");
+    return;
+  }
+  const path = action === "confirm"
+    ? `/admin/bookings/${bookingId}/confirm`
+    : `/admin/bookings/${bookingId}/cancel`;
+  setAdminAgendaState(action === "confirm" ? "Confirmando..." : "Cancelando...");
+  setNoteLoading(adminAgendaStateEl, true);
+  try {
+    const response = await adminFetch(`${apiBaseUrl}${path}`, {
+      method: "PATCH",
+    });
+    const data = await response.json().catch(() => null);
+    if (response.status === 401) {
+      setStoredAdminToken("");
+      setAdminStatus("Acceso restringido.");
+      setAdminAgendaState("Acceso restringido.");
+      return;
+    }
+    if (response.status === 404) {
+      setAdminAgendaState("Reserva no encontrada.");
+      return;
+    }
+    if (response.status === 409) {
+      setAdminAgendaState(data?.error?.message || "No se pudo actualizar.");
+      return;
+    }
+    if (!response.ok || !data || !data.ok) {
+      setAdminAgendaState("No se pudo actualizar.");
+      return;
+    }
+    setAdminAgendaState(action === "confirm" ? "Reserva confirmada." : "Reserva cancelada.");
+    await loadAdminAgenda();
+  } catch {
+    setAdminAgendaState("No se pudo conectar.");
+  } finally {
+    setNoteLoading(adminAgendaStateEl, false);
+  }
 }
 
 function parseServicesPayload(data) {
@@ -1089,8 +1144,11 @@ async function createBooking() {
 async function loadBookings() {
   setBusy(bookingsPanel, true);
   setNoteLoading(bookingsStateEl, true);
+  setNoteLoading(bookingsHistoryStateEl, true);
   setBookingsState("Cargando...");
-  bookingsListEl.innerHTML = "";
+  bookingsActiveListEl.innerHTML = "";
+  bookingsHistoryListEl.innerHTML = "";
+  setBookingsHistoryState("--");
   setBookingsCta(null, false);
   toggleRetry(bookingsRetryBtn, false);
 
@@ -1101,15 +1159,18 @@ async function loadBookings() {
     if (response.status === 401) {
       setBookingsState("Necesitas iniciar sesion");
       setBookingsCta("Para ver tus reservas,", true);
+      setBookingsHistoryState("Acceso restringido.");
       toggleRetry(bookingsRetryBtn, true);
       return;
     }
     if (response.status === 404) {
       setBookingsState("Not available yet");
+      setBookingsHistoryState("Not available yet");
       return;
     }
     if (!response.ok) {
       setBookingsState(describeError(response, data));
+      setBookingsHistoryState(describeError(response, data));
       if (response.status >= 500) {
         toggleRetry(bookingsRetryBtn, true);
       }
@@ -1118,13 +1179,21 @@ async function loadBookings() {
 
     const bookings = parseBookingsPayload(data);
     if (!Array.isArray(bookings) || bookings.length === 0) {
-      setBookingsState("Sin reservas");
+      setBookingsState("Sin reservas activas");
+      setBookingsHistoryState("Sin historial");
       setBookingsCta("Crea tu primera reserva.", false);
       return;
     }
 
-    setBookingsState("Listo");
-    for (const booking of bookings) {
+    const active = bookings.filter((booking) => booking.status !== "CANCELED");
+    const history = bookings.filter((booking) => booking.status === "CANCELED");
+    setBookingsState(active.length ? "Listo" : "Sin reservas activas");
+    setBookingsHistoryState(history.length ? "Listo" : "Sin historial");
+    if (bookingsHistoryEl) {
+      bookingsHistoryEl.open = shouldShowHistoryOpen(active.length > 0 ? true : false);
+    }
+
+    for (const booking of active) {
       const item = document.createElement("div");
       item.className = "booking-item";
 
@@ -1159,13 +1228,33 @@ async function loadBookings() {
       }
 
       item.append(title, meta, actions);
-      bookingsListEl.append(item);
+      bookingsActiveListEl.append(item);
+    }
+
+    for (const booking of history) {
+      const item = document.createElement("div");
+      item.className = "booking-item";
+
+      const title = document.createElement("div");
+      title.className = "value";
+      title.textContent = formatSlotLabel(booking.startAt);
+
+      const meta = document.createElement("div");
+      meta.className = "booking-meta";
+      const status = formatStatus(booking.status);
+      const serviceName = booking.service?.name ? ` - ${booking.service.name}` : "";
+      meta.textContent = `${status}${serviceName}`;
+
+      item.append(title, meta);
+      bookingsHistoryListEl.append(item);
     }
   } catch {
     setBookingsState("No se pudo conectar");
+    setBookingsHistoryState("No se pudo conectar");
     toggleRetry(bookingsRetryBtn, true);
   } finally {
     setNoteLoading(bookingsStateEl, false);
+    setNoteLoading(bookingsHistoryStateEl, false);
     setBusy(bookingsPanel, false);
   }
 }
@@ -1265,7 +1354,24 @@ async function loadAdminAgenda() {
       const serviceName = booking.service?.name ? ` - ${booking.service.name}` : "";
       const userEmail = booking.user?.email ? ` - ${booking.user.email}` : "";
       meta.textContent = `${formatStatus(booking.status)}${serviceName}${userEmail}`;
-      item.append(title, meta);
+      const actions = document.createElement("div");
+      actions.className = "booking-actions";
+      if (booking.status === "PENDING") {
+        const confirmBtn = document.createElement("button");
+        confirmBtn.type = "button";
+        confirmBtn.className = "button ghost";
+        confirmBtn.textContent = "Confirmar";
+        confirmBtn.addEventListener("click", () => adminUpdateBooking(booking.id, "confirm"));
+        actions.append(confirmBtn);
+      } else if (booking.status === "CONFIRMED") {
+        const cancelBtn = document.createElement("button");
+        cancelBtn.type = "button";
+        cancelBtn.className = "button ghost";
+        cancelBtn.textContent = "Cancelar";
+        cancelBtn.addEventListener("click", () => adminUpdateBooking(booking.id, "cancel"));
+        actions.append(cancelBtn);
+      }
+      item.append(title, meta, actions);
       adminAgendaListEl.append(item);
     }
   } catch {

@@ -128,6 +128,95 @@ router.get("/admin/agenda", async (req, res, next) => {
   }
 });
 
+router.patch("/admin/bookings/:id/confirm", async (req, res, next) => {
+  if (!prisma) {
+    return next(new AppError(503, ERROR_CODES.INTERNAL_ERROR, "Database not configured", { configured: false }));
+  }
+
+  const bookingId = req.params?.id;
+  if (!bookingId) {
+    return next(badRequest("Missing booking id"));
+  }
+
+  try {
+    requireAdmin(req);
+    const existing = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: { id: true, status: true, startAt: true, updatedAt: true },
+    });
+    if (!existing) {
+      return next(notFound("Booking not found", { bookingId }));
+    }
+    if (existing.status === "CANCELED") {
+      return next(conflict(ERROR_CODES.BAD_REQUEST, "La reserva ya fue cancelada."));
+    }
+    if (existing.status === "CONFIRMED") {
+      return res.status(200).json({
+        ok: true,
+        data: {
+          booking: existing,
+        },
+      });
+    }
+    const updated = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: "CONFIRMED" },
+      select: { id: true, status: true, startAt: true, updatedAt: true },
+    });
+    return res.status(200).json({
+      ok: true,
+      data: {
+        booking: updated,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch("/admin/bookings/:id/cancel", async (req, res, next) => {
+  if (!prisma) {
+    return next(new AppError(503, ERROR_CODES.INTERNAL_ERROR, "Database not configured", { configured: false }));
+  }
+
+  const bookingId = req.params?.id;
+  if (!bookingId) {
+    return next(badRequest("Missing booking id"));
+  }
+
+  try {
+    requireAdmin(req);
+    const existing = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: { id: true, status: true, startAt: true, updatedAt: true },
+    });
+    if (!existing) {
+      return next(notFound("Booking not found", { bookingId }));
+    }
+    if (existing.status === "CANCELED") {
+      return res.status(200).json({
+        ok: true,
+        data: {
+          booking: existing,
+        },
+      });
+    }
+    const updated = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: "CANCELED" },
+      select: { id: true, status: true, startAt: true, updatedAt: true },
+    });
+    return res.status(200).json({
+      ok: true,
+      data: {
+        booking: updated,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.get("/admin/services", async (req, res, next) => {
   if (!prisma) {
     return next(new AppError(503, ERROR_CODES.INTERNAL_ERROR, "Database not configured", { configured: false }));
