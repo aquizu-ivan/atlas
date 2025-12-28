@@ -215,6 +215,10 @@ function setBookingConfirmation(message) {
   bookingConfirmationEl.textContent = message;
 }
 
+function setConfirmLabel() {
+  bookingConfirmBtn.textContent = rescheduleContext ? "Confirmar reprogramacion" : "Confirmar reserva";
+}
+
 function getStoredDevToken() {
   try {
     return sessionStorage.getItem(devTokenStorageKey) || "";
@@ -423,6 +427,7 @@ let selectedServiceId = "";
 let selectedService = null;
 let selectedSlot = "";
 let selectedDate = "";
+let rescheduleContext = null;
 const initialBookingQuery = readBookingQuery();
 
 async function requestLink() {
@@ -644,6 +649,7 @@ function clearAvailability() {
   setBookingSummary("Selecciona un horario");
   setBookingConfirmation("--");
   selectedSlot = "";
+  setConfirmLabel();
   bookingConfirmBtn.disabled = true;
   toggleRetry(availabilityRetryBtn, false);
 }
@@ -657,6 +663,76 @@ function applyDatePreset(offsetDays) {
   updateBookingSummary();
   updateBookingQuery();
   loadAvailability();
+}
+
+function normalizeIso(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return date.toISOString();
+}
+
+function ensureServiceOption(service) {
+  if (!service || !servicesSelectEl) {
+    return;
+  }
+  const existingOption = servicesSelectEl.querySelector(`option[value="${service.id}"]`);
+  if (existingOption) {
+    existingOption.textContent = service.name || existingOption.textContent;
+    return;
+  }
+  const option = document.createElement("option");
+  option.value = service.id;
+  option.textContent = service.name || "Servicio";
+  servicesSelectEl.append(option);
+}
+
+function startReschedule(booking) {
+  if (!booking || booking.status === "CANCELED") {
+    return;
+  }
+  rescheduleContext = {
+    bookingId: booking.id,
+    serviceId: booking.serviceId,
+    startAt: normalizeIso(booking.startAt),
+    serviceName: booking.service?.name || "Servicio",
+    durationMin: booking.service?.durationMinutes || 0,
+  };
+  selectedServiceId = booking.serviceId;
+  const cached = servicesCache.find((service) => service.id === booking.serviceId);
+  selectedService = cached || {
+    id: booking.serviceId,
+    name: booking.service?.name || "Servicio",
+    durationMin: booking.service?.durationMinutes || 0,
+  };
+  if (!cached) {
+    ensureServiceOption(selectedService);
+  }
+  servicesSelectEl.value = booking.serviceId;
+  servicesSelectEl.disabled = true;
+  bookingDateEl.disabled = false;
+  const baseDate = normalizeIso(booking.startAt);
+  if (baseDate) {
+    bookingDateEl.value = baseDate.slice(0, 10);
+    selectedDate = bookingDateEl.value;
+  }
+  clearAvailability();
+  updateBookingSummary();
+  updateBookingQuery();
+  setBookingMessage("Selecciona un nuevo horario para reprogramar.");
+  setConfirmLabel();
+  loadAvailability();
+  const bookingPanel = document.getElementById("booking-panel");
+  if (bookingPanel && bookingPanel.scrollIntoView) {
+    bookingPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function resetReschedule() {
+  rescheduleContext = null;
+  servicesSelectEl.disabled = !selectedServiceId;
+  setConfirmLabel();
 }
 
 async function loadAvailability() {
@@ -728,10 +804,18 @@ function updateBookingSummary() {
     return;
   }
   if (!selectedSlot) {
-    setBookingSummary(`${serviceName} - ${selectedDate}`);
+    if (rescheduleContext) {
+      setBookingSummary(`Reprogramar: ${serviceName} - ${selectedDate}`);
+    } else {
+      setBookingSummary(`${serviceName} - ${selectedDate}`);
+    }
     return;
   }
-  setBookingSummary(`${serviceName} - ${formatSlotLabel(selectedSlot)}`);
+  if (rescheduleContext) {
+    setBookingSummary(`Reprogramar: ${serviceName} - ${formatSlotLabel(selectedSlot)}`);
+  } else {
+    setBookingSummary(`${serviceName} - ${formatSlotLabel(selectedSlot)}`);
+  }
 }
 
 function selectSlot(startAt, button) {
@@ -750,7 +834,17 @@ async function createBooking() {
     return;
   }
 
-  setBookingMessage("Reservando...");
+  const isReschedule = Boolean(rescheduleContext);
+  if (isReschedule) {
+    const original = rescheduleContext.startAt;
+    const next = normalizeIso(selectedSlot);
+    if (original && next && original === next) {
+      setBookingMessage("Elige un horario distinto.");
+      return;
+    }
+  }
+
+  setBookingMessage(isReschedule ? "Reprogramando..." : "Reservando...");
   setBookingConfirmation("--");
   const buttons = availabilitySlotsEl.querySelectorAll("button");
   buttons.forEach((button) => { button.disabled = true; });
@@ -786,7 +880,11 @@ async function createBooking() {
       return;
     }
 
-    setBookingMessage("Reserva creada.");
+    if (isReschedule) {
+      setBookingMessage("Procesando reprogramacion...");
+    } else {
+      setBookingMessage("Reserva creada.");
+    }
     const booking = data?.data?.booking;
     if (booking) {
       const serviceName = selectedService?.name || "Servicio";
@@ -803,6 +901,39 @@ async function createBooking() {
       confirmationParts.push(`Estado: ${statusLabel}`);
       setBookingConfirmation(confirmationParts.join(" - "));
     }
+
+    if (!isReschedule) {
+      await loadBookings();
+      await loadAvailability();
+      selectedSlot = "";
+      bookingConfirmBtn.disabled = true;
+      return;
+    }
+
+    const originalId = rescheduleContext?.bookingId;
+    if (!originalId) {
+      resetReschedule();
+      await loadBookings();
+      await loadAvailability();
+      selectedSlot = "";
+      bookingConfirmBtn.disabled = true;
+      return;
+    }
+
+    const cancelRes = await authFetch(apiEndpoint(`/bookings/${originalId}/cancel`), {
+      method: "POST",
+    });
+    if (!cancelRes.ok) {
+      if (booking?.id) {
+        await authFetch(apiEndpoint(`/bookings/${booking.id}/cancel`), { method: "POST" });
+      }
+      setBookingMessage("No pudimos reprogramar. Intenta de nuevo.");
+      setBookingConfirmation("--");
+      return;
+    }
+
+    setBookingMessage("Reserva reprogramada.");
+    resetReschedule();
     await loadBookings();
     await loadAvailability();
     selectedSlot = "";
@@ -866,14 +997,27 @@ async function loadBookings() {
       const serviceName = booking.service?.name ? ` - ${booking.service.name}` : "";
       meta.textContent = `${status}${serviceName}`;
 
+      const actions = document.createElement("div");
+      actions.className = "booking-actions";
+
       const cancel = document.createElement("button");
       cancel.type = "button";
       cancel.className = "button ghost";
       cancel.textContent = booking.status === "CANCELED" ? "Cancelada" : "Cancelar";
       cancel.disabled = booking.status === "CANCELED";
       cancel.addEventListener("click", () => cancelBooking(booking.id));
+      actions.append(cancel);
 
-      item.append(title, meta, cancel);
+      if (booking.status !== "CANCELED") {
+        const reschedule = document.createElement("button");
+        reschedule.type = "button";
+        reschedule.className = "button ghost";
+        reschedule.textContent = "Reprogramar";
+        reschedule.addEventListener("click", () => startReschedule(booking));
+        actions.append(reschedule);
+      }
+
+      item.append(title, meta, actions);
       bookingsListEl.append(item);
     }
   } catch {
@@ -936,6 +1080,10 @@ servicesRetryBtn.addEventListener("click", loadServices);
 availabilityRetryBtn.addEventListener("click", loadAvailability);
 bookingsRetryBtn.addEventListener("click", loadBookings);
 servicesSelectEl.addEventListener("change", (event) => {
+  if (rescheduleContext) {
+    setBookingMessage("Elige un nuevo horario para reprogramar.");
+    return;
+  }
   selectedServiceId = event.target.value;
   selectedService = servicesCache.find((service) => service.id === selectedServiceId) || null;
   bookingDateEl.disabled = !selectedServiceId;
@@ -1014,6 +1162,7 @@ setDevLinkState(null);
 clearAvailability();
 setServicesState("Cargando...");
 setBookingsState("Cargando...");
+setConfirmLabel();
 
 const authHash = handleAuthHash();
 const authQuery = authHash ? null : handleAuthQuery();

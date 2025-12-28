@@ -286,6 +286,12 @@ h1 {
   background: rgba(9, 13, 22, 0.6);
 }
 
+.booking-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .booking-meta {
   font-size: 13px;
   color: var(--muted);
