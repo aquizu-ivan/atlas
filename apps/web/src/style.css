@@ -17,8 +17,13 @@
   --control-radius: 12px;
   --control-gap: 10px;
   --panel-gap: 18px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --t-fast: 140ms;
+  --t: 200ms;
   --hover-lift: 1px;
-  --hover-shadow: 0 12px 20px rgba(5, 10, 22, 0.35);
+  --hover-shadow: 0 12px 20px rgba(5, 10, 22, 0.28);
+  --shadow-hover: 0 16px 26px rgba(5, 10, 22, 0.32);
+  --ring: 0 0 0 2px rgba(111, 214, 255, 0.5);
 }
 
 * { box-sizing: border-box; }
@@ -80,7 +85,7 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 0.24em;
   color: var(--muted);
-  margin-bottom: 20px;
+  margin: 0 0 20px;
 }
 
 .panel-header {
@@ -105,7 +110,7 @@ h1 {
 
 .admin-panels {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .panel-copy {
@@ -225,6 +230,7 @@ h1 {
 .admin-card {
   margin-top: 8px;
   padding: calc(var(--card-pad) - 2px);
+  min-height: auto;
 }
 
 .admin-toggle {
@@ -302,6 +308,11 @@ h1 {
   color: #cfd8e6;
 }
 
+.service-card[data-has-selection="true"] .summary-card--compact {
+  border-color: rgba(111, 214, 255, 0.35);
+  box-shadow: 0 10px 20px rgba(6, 12, 22, 0.32);
+}
+
 .field {
   height: var(--control-h);
   border-radius: var(--control-radius);
@@ -315,7 +326,7 @@ h1 {
 .field:focus {
   outline: none;
   border-color: #3b4864;
-  box-shadow: 0 0 0 2px rgba(111, 214, 255, 0.15);
+  box-shadow: var(--ring);
 }
 
 .field:focus-visible,
@@ -334,7 +345,7 @@ h1 {
   color: #071018;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease), background var(--t-fast) var(--ease);
 }
 
 .button.ghost {
@@ -344,8 +355,8 @@ h1 {
 }
 
 .button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 16px rgba(8, 20, 35, 0.35);
+  transform: translateY(calc(-1 * var(--hover-lift)));
+  box-shadow: var(--hover-shadow);
 }
 
 .button:active:not(:disabled) {
@@ -522,12 +533,12 @@ h1 {
 }
 
 .confirm-actions .button:not(:disabled) {
-  box-shadow: 0 16px 24px rgba(7, 16, 24, 0.45);
+  box-shadow: var(--shadow-hover);
 }
 
 .confirm-actions .button.cta:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 18px 26px rgba(7, 16, 24, 0.45);
+  box-shadow: 0 20px 28px rgba(7, 16, 24, 0.4);
 }
 
 .confirm-actions .button.cta:active:not(:disabled) {
@@ -561,7 +572,7 @@ h1 {
   border-radius: 12px;
   border: 1px solid #212a3c;
   background: rgba(9, 13, 22, 0.6);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease), border-color var(--t) var(--ease), background var(--t) var(--ease);
 }
 
 .booking-item:hover {
@@ -612,6 +623,12 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  transition: color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.history-summary:hover {
+  color: #c7d2e4;
+  transform: translateY(-1px);
 }
 
 .history-summary::-webkit-details-marker {
@@ -655,6 +672,20 @@ h1 {
 .admin-summary:focus-visible {
   outline: 2px solid rgba(111, 214, 255, 0.6);
   outline-offset: 2px;
+}
+
+.admin-summary:hover {
+  color: #c7d2e4;
+}
+
+.slot-button:focus-visible {
+  box-shadow: var(--ring);
+}
+
+.slot-button.is-selected {
+  background: rgba(111, 214, 255, 0.15);
+  border-color: rgba(111, 214, 255, 0.6);
+  color: var(--accent);
 }
 
 .system-body {
