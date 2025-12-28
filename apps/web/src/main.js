@@ -25,8 +25,13 @@ const authDevLinkOpenBtn = document.querySelector("[data-auth-devlink-open]");
 const authRefreshBtn = document.querySelector("[data-auth-refresh]");
 const authLogoutBtn = document.querySelector("[data-auth-logout]");
 const servicesStateEl = document.querySelector("[data-services-state]");
+const servicesCardEl = document.querySelector("[data-services-card]");
+const servicesSummaryEl = document.querySelector("[data-services-summary]");
+const servicesSummaryNameEl = document.querySelector("[data-services-summary-name]");
+const servicesSummaryDurationRowEl = document.querySelector("[data-services-summary-duration-row]");
+const servicesSummaryDurationEl = document.querySelector("[data-services-summary-duration]");
 const servicesSelectEl = document.querySelector("[data-services-select]");
-const servicesEmptyEl = document.querySelector("[data-services-empty]");
+const servicesHintEl = document.querySelector("[data-services-hint]");
 const servicesRetryBtn = document.querySelector("[data-services-retry]");
 const bookingDateEl = document.querySelector("[data-booking-date]");
 const dateTodayBtn = document.querySelector("[data-date-today]");
@@ -35,13 +40,17 @@ const dateWeekBtn = document.querySelector("[data-date-week]");
 const availabilityStateEl = document.querySelector("[data-availability-state]");
 const availabilitySlotsEl = document.querySelector("[data-availability-slots]");
 const availabilityRetryBtn = document.querySelector("[data-availability-retry]");
-const bookingSummaryEl = document.querySelector("[data-booking-summary]");
+const bookingSummaryServiceEl = document.querySelector("[data-booking-summary-service]");
+const bookingSummaryDateEl = document.querySelector("[data-booking-summary-date]");
+const bookingSummaryTimeEl = document.querySelector("[data-booking-summary-time]");
 const bookingConfirmBtn = document.querySelector("[data-booking-confirm]");
 const bookingMessageEl = document.querySelector("[data-booking-message]");
 const bookingConfirmationEl = document.querySelector("[data-booking-confirmation]");
 const bookingsStateEl = document.querySelector("[data-bookings-state]");
 const bookingsCtaEl = document.querySelector("[data-bookings-cta]");
 const bookingsActiveListEl = document.querySelector("[data-bookings-active-list]");
+const bookingsActiveSummaryEl = document.querySelector("[data-bookings-active-summary]");
+const bookingsHistorySummaryEl = document.querySelector("[data-bookings-history-summary]");
 const bookingsHistoryEl = document.querySelector("[data-bookings-history]");
 const bookingsHistoryStateEl = document.querySelector("[data-bookings-history-state]");
 const bookingsHistoryListEl = document.querySelector("[data-bookings-history-list]");
@@ -133,6 +142,7 @@ const apiBaseUrl = `${apiOrigin}/api`;
 const devTokenStorageKey = "atlas_dev_token";
 const adminTokenStorageKey = "atlas_admin_token";
 const adminModeStorageKey = "atlas_admin_mode";
+const summaryPlaceholder = "\u2014";
 
 apiEl.textContent = healthUrl;
 
@@ -184,24 +194,30 @@ function setDevLinkState(link) {
 }
 
 function setServicesState(message) {
-  servicesStateEl.textContent = message;
+  servicesStateEl.textContent = message || "";
+}
+
+function setServicesHint(message) {
+  if (servicesHintEl) {
+    servicesHintEl.textContent = message || "";
+  }
 }
 
 function setAvailabilityState(message) {
-  availabilityStateEl.textContent = message;
+  availabilityStateEl.textContent = message || "";
 }
 
 function setBookingMessage(message) {
-  bookingMessageEl.textContent = message;
+  bookingMessageEl.textContent = message || "";
 }
 
 function setBookingsState(message) {
-  bookingsStateEl.textContent = message;
+  bookingsStateEl.textContent = message || "";
 }
 
 function setBookingsHistoryState(message) {
   if (bookingsHistoryStateEl) {
-    bookingsHistoryStateEl.textContent = message;
+    bookingsHistoryStateEl.textContent = message || "";
   }
 }
 
@@ -235,15 +251,14 @@ function toggleRetry(button, show) {
 }
 
 function resetBookingsCta() {
-  bookingsCtaEl.textContent = "--";
+  bookingsCtaEl.textContent = "";
   bookingsCtaEl.innerHTML = "";
-  bookingsCtaEl.textContent = "--";
 }
 
 function setBookingsCta(message, showLink) {
   bookingsCtaEl.innerHTML = "";
   if (!message && !showLink) {
-    bookingsCtaEl.textContent = "--";
+    bookingsCtaEl.textContent = "";
     return;
   }
   if (message) {
@@ -261,12 +276,22 @@ function setBookingsCta(message, showLink) {
   }
 }
 
-function setBookingSummary(message) {
-  bookingSummaryEl.textContent = message;
+function updateBookingSummaries(activeCount, historyCount) {
+  if (bookingsActiveSummaryEl) {
+    bookingsActiveSummaryEl.textContent = `Activas (${activeCount})`;
+  }
+  if (bookingsHistorySummaryEl) {
+    bookingsHistorySummaryEl.textContent = `Historial (${historyCount})`;
+  }
+}
+
+function setSummaryValue(element, value) {
+  if (!element) return;
+  element.textContent = value || summaryPlaceholder;
 }
 
 function setBookingConfirmation(message) {
-  bookingConfirmationEl.textContent = message;
+  bookingConfirmationEl.textContent = message || "";
 }
 
 function setConfirmLabel() {
@@ -281,25 +306,25 @@ function setAdminStatus(message) {
 
 function setAdminAgendaState(message) {
   if (adminAgendaStateEl) {
-    adminAgendaStateEl.textContent = message;
+    adminAgendaStateEl.textContent = message || "";
   }
 }
 
 function setAdminUsersState(message) {
   if (adminUsersStateEl) {
-    adminUsersStateEl.textContent = message;
+    adminUsersStateEl.textContent = message || "";
   }
 }
 
 function setAdminServicesState(message) {
   if (adminServicesStateEl) {
-    adminServicesStateEl.textContent = message;
+    adminServicesStateEl.textContent = message || "";
   }
 }
 
 function setAdminServicesMessage(message) {
   if (adminServicesMessageEl) {
-    adminServicesMessageEl.textContent = message;
+    adminServicesMessageEl.textContent = message || "";
   }
 }
 
@@ -441,10 +466,6 @@ function formatStatus(status) {
   return normalized;
 }
 
-function shouldShowHistoryOpen(hasActive) {
-  return !hasActive;
-}
-
 function describeError(response, data) {
   if (!response) {
     return "No se pudo conectar";
@@ -494,6 +515,28 @@ function formatDateCompact(value) {
     return "--";
   }
   return date.toISOString().replace("T", " ").slice(0, 16);
+}
+
+function formatDateOnly(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "--";
+  }
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+function formatTimeLabel(value) {
+  if (!value) {
+    return summaryPlaceholder;
+  }
+  const label = formatSlotLabel(value);
+  if (label.includes(" ")) {
+    return label.split(" ")[1];
+  }
+  return label;
 }
 
 async function adminUpdateBooking(bookingId, action) {
@@ -597,6 +640,46 @@ function updateBookingQuery() {
   const query = params.toString();
   const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
   window.history.replaceState({}, "", nextUrl);
+}
+
+function updateServiceHint() {
+  if (!servicesHintEl) {
+    return;
+  }
+  if (!selectedServiceId) {
+    setServicesHint("Elegi un servicio para ver horarios.");
+    return;
+  }
+  setServicesHint("");
+}
+
+function updateServiceSummary() {
+  if (!servicesSummaryEl) {
+    return;
+  }
+  if (!selectedServiceId || !selectedService) {
+    servicesSummaryEl.hidden = true;
+    if (servicesCardEl) {
+      servicesCardEl.dataset.hasSelection = "false";
+    }
+    return;
+  }
+  servicesSummaryEl.hidden = false;
+  if (servicesCardEl) {
+    servicesCardEl.dataset.hasSelection = "true";
+  }
+  if (servicesSummaryNameEl) {
+    servicesSummaryNameEl.textContent = selectedService.name || "Servicio";
+  }
+  const duration = selectedService.durationMin ?? selectedService.durationMinutes;
+  if (duration && servicesSummaryDurationEl) {
+    servicesSummaryDurationEl.textContent = `Duracion: ${duration} min`;
+    if (servicesSummaryDurationRowEl) {
+      servicesSummaryDurationRowEl.hidden = false;
+    }
+  } else if (servicesSummaryDurationRowEl) {
+    servicesSummaryDurationRowEl.hidden = true;
+  }
 }
 
 function calculateEndAt(startAt, durationMin) {
@@ -815,7 +898,7 @@ async function loadServices() {
   setBusy(bookingPanel, true);
   setNoteLoading(servicesStateEl, true);
   setServicesState("Cargando...");
-  servicesEmptyEl.textContent = "--";
+  setServicesHint("");
   servicesSelectEl.disabled = true;
   servicesSelectEl.innerHTML = "<option value=\"\">Selecciona un servicio</option>";
   servicesCache = [];
@@ -825,9 +908,10 @@ async function loadServices() {
   selectedDate = "";
   bookingDateEl.value = "";
   bookingDateEl.disabled = true;
-  setBookingSummary("Selecciona un horario");
-  setBookingMessage("--");
-  setBookingConfirmation("--");
+  updateServiceSummary();
+  updateBookingSummary();
+  setBookingMessage("");
+  setBookingConfirmation("");
   toggleRetry(servicesRetryBtn, false);
 
   try {
@@ -836,19 +920,20 @@ async function loadServices() {
 
     if (response.status === 404) {
       setServicesState("Not available yet");
-      servicesEmptyEl.textContent = "Servicios no disponibles";
+      setServicesHint("");
       return;
     }
     if (!response.ok) {
       setServicesState("No se pudo conectar");
+      setServicesHint("");
       toggleRetry(servicesRetryBtn, true);
       return;
     }
 
     const services = parseServicesPayload(data);
     if (!Array.isArray(services) || services.length === 0) {
-      setServicesState("Sin servicios");
-      servicesEmptyEl.textContent = "Sin servicios";
+      setServicesState("Sin resultados");
+      setServicesHint("");
       return;
     }
 
@@ -860,8 +945,7 @@ async function loadServices() {
       servicesSelectEl.append(option);
     }
     servicesSelectEl.disabled = false;
-    servicesEmptyEl.textContent = "Selecciona un servicio";
-    setServicesState("Listo");
+    setServicesState("");
 
     if (initialBookingQuery.serviceKey) {
       const match = servicesCache.find((service) => matchesServiceParam(service, initialBookingQuery.serviceKey));
@@ -881,8 +965,12 @@ async function loadServices() {
         loadAvailability();
       }
     }
+    updateServiceHint();
+    updateServiceSummary();
+    updateBookingSummary();
   } catch {
     setServicesState("No se pudo conectar");
+    setServicesHint("");
     toggleRetry(servicesRetryBtn, true);
   } finally {
     setNoteLoading(servicesStateEl, false);
@@ -892,14 +980,15 @@ async function loadServices() {
 
 function clearAvailability() {
   availabilitySlotsEl.innerHTML = "";
-  setAvailabilityState("--");
-  setBookingMessage("--");
-  setBookingSummary("Selecciona un horario");
-  setBookingConfirmation("--");
+  const hasSelection = Boolean(selectedServiceId && bookingDateEl.value);
+  setAvailabilityState(hasSelection ? "" : "Selecciona servicio y fecha");
+  setBookingMessage("");
+  setBookingConfirmation("");
   selectedSlot = "";
   setConfirmLabel();
   bookingConfirmBtn.disabled = true;
   toggleRetry(availabilityRetryBtn, false);
+  updateBookingSummary();
 }
 
 function applyDatePreset(offsetDays) {
@@ -959,6 +1048,8 @@ function startReschedule(booking) {
   }
   servicesSelectEl.value = booking.serviceId;
   servicesSelectEl.disabled = true;
+  updateServiceSummary();
+  updateServiceHint();
   bookingDateEl.disabled = false;
   const baseDate = normalizeIso(booking.startAt);
   if (baseDate) {
@@ -980,6 +1071,7 @@ function startReschedule(booking) {
 function resetReschedule() {
   rescheduleContext = null;
   servicesSelectEl.disabled = !selectedServiceId;
+  updateServiceHint();
   setConfirmLabel();
 }
 
@@ -995,8 +1087,8 @@ async function loadAvailability() {
 
   setAvailabilityState("Cargando...");
   setNoteLoading(availabilityStateEl, true);
-  setBookingMessage("--");
-  setBookingConfirmation("--");
+  setBookingMessage("");
+  setBookingConfirmation("");
   availabilitySlotsEl.innerHTML = "";
   selectedSlot = "";
   bookingConfirmBtn.disabled = true;
@@ -1027,11 +1119,11 @@ async function loadAvailability() {
 
     const slots = parseSlotsPayload(data);
     if (!Array.isArray(slots) || slots.length === 0) {
-      setAvailabilityState("Sin horarios disponibles");
+      setAvailabilityState("Sin resultados");
       return;
     }
 
-    setAvailabilityState("Listo");
+    setAvailabilityState("");
     for (const slot of slots) {
       const startAt = slot.startAt || slot;
       const button = document.createElement("button");
@@ -1049,25 +1141,32 @@ async function loadAvailability() {
   }
 }
 
-function updateBookingSummary() {
-  const serviceName = selectedService?.name || "Servicio";
+function ensureBookingGuidance() {
+  const current = bookingMessageEl.textContent.trim();
+  if (current && !current.startsWith("Selecciona")) {
+    return;
+  }
   if (!selectedServiceId || !selectedDate) {
-    setBookingSummary("Selecciona un horario");
+    setBookingMessage("");
     return;
   }
   if (!selectedSlot) {
-    if (rescheduleContext) {
-      setBookingSummary(`Reprogramar: ${serviceName} - ${selectedDate}`);
-    } else {
-      setBookingSummary(`${serviceName} - ${selectedDate}`);
-    }
+    setBookingMessage(rescheduleContext
+      ? "Selecciona un nuevo horario para reprogramar."
+      : "Selecciona un horario para continuar.");
     return;
   }
-  if (rescheduleContext) {
-    setBookingSummary(`Reprogramar: ${serviceName} - ${formatSlotLabel(selectedSlot)}`);
-  } else {
-    setBookingSummary(`${serviceName} - ${formatSlotLabel(selectedSlot)}`);
-  }
+  setBookingMessage("");
+}
+
+function updateBookingSummary() {
+  const serviceLabel = selectedService?.name || summaryPlaceholder;
+  const dateLabel = selectedDate || summaryPlaceholder;
+  const timeLabel = selectedSlot ? formatTimeLabel(selectedSlot) : summaryPlaceholder;
+  setSummaryValue(bookingSummaryServiceEl, serviceLabel);
+  setSummaryValue(bookingSummaryDateEl, dateLabel);
+  setSummaryValue(bookingSummaryTimeEl, timeLabel);
+  ensureBookingGuidance();
 }
 
 function selectSlot(startAt, button) {
@@ -1077,6 +1176,7 @@ function selectSlot(startAt, button) {
     slotButton.classList.toggle("is-selected", slotButton === button);
   });
   updateBookingSummary();
+  setBookingMessage("");
   bookingConfirmBtn.disabled = false;
 }
 
@@ -1098,7 +1198,7 @@ async function createBooking() {
 
   setBookingMessage(isReschedule ? "Reprogramando..." : "Reservando...");
   setNoteLoading(bookingMessageEl, true);
-  setBookingConfirmation("--");
+  setBookingConfirmation("");
   const buttons = availabilitySlotsEl.querySelectorAll("button");
   buttons.forEach((button) => { button.disabled = true; });
   bookingConfirmBtn.disabled = true;
@@ -1181,7 +1281,7 @@ async function createBooking() {
         await authFetch(apiEndpoint(`/bookings/${booking.id}/cancel`), { method: "POST" });
       }
       setBookingMessage("No pudimos reprogramar. Intenta de nuevo.");
-      setBookingConfirmation("--");
+      setBookingConfirmation("");
       return;
     }
 
@@ -1208,8 +1308,9 @@ async function loadBookings() {
   setBookingsState("Cargando...");
   bookingsActiveListEl.innerHTML = "";
   bookingsHistoryListEl.innerHTML = "";
-  setBookingsHistoryState("--");
+  setBookingsHistoryState("Cargando...");
   setBookingsCta(null, false);
+  updateBookingSummaries(0, 0);
   toggleRetry(bookingsRetryBtn, false);
 
   try {
@@ -1220,17 +1321,20 @@ async function loadBookings() {
       setBookingsState("Necesitas iniciar sesion");
       setBookingsCta("Para ver tus reservas,", true);
       setBookingsHistoryState("Acceso restringido.");
+      updateBookingSummaries(0, 0);
       toggleRetry(bookingsRetryBtn, true);
       return;
     }
     if (response.status === 404) {
       setBookingsState("Not available yet");
       setBookingsHistoryState("Not available yet");
+      updateBookingSummaries(0, 0);
       return;
     }
     if (!response.ok) {
       setBookingsState(describeError(response, data));
       setBookingsHistoryState(describeError(response, data));
+      updateBookingSummaries(0, 0);
       if (response.status >= 500) {
         toggleRetry(bookingsRetryBtn, true);
       }
@@ -1239,19 +1343,18 @@ async function loadBookings() {
 
     const bookings = parseBookingsPayload(data);
     if (!Array.isArray(bookings) || bookings.length === 0) {
-      setBookingsState("Sin reservas activas");
-      setBookingsHistoryState("Sin historial");
+      setBookingsState("Sin resultados");
+      setBookingsHistoryState("Sin resultados");
       setBookingsCta("Crea tu primera reserva.", false);
+      updateBookingSummaries(0, 0);
       return;
     }
 
     const active = bookings.filter((booking) => booking.status !== "CANCELED");
     const history = bookings.filter((booking) => booking.status === "CANCELED");
-    setBookingsState(active.length ? "Listo" : "Sin reservas activas");
-    setBookingsHistoryState(history.length ? "Listo" : "Sin historial");
-    if (bookingsHistoryEl) {
-      bookingsHistoryEl.open = shouldShowHistoryOpen(active.length > 0 ? true : false);
-    }
+    setBookingsState(active.length ? "" : "Sin resultados");
+    setBookingsHistoryState(history.length ? "" : "Sin resultados");
+    updateBookingSummaries(active.length, history.length);
 
     for (const booking of active) {
       const item = document.createElement("div");
@@ -1414,7 +1517,7 @@ async function loadAdminAgenda() {
       setAdminAgendaState("Sin reservas");
       return;
     }
-    setAdminAgendaState("Listo");
+    setAdminAgendaState("");
     for (const booking of bookings) {
       const item = document.createElement("div");
       item.className = "booking-item";
@@ -1496,10 +1599,10 @@ async function loadAdminUsers() {
     }
     const users = data?.data?.users || [];
     if (!Array.isArray(users) || users.length === 0) {
-      setAdminUsersState("Sin usuarios");
+      setAdminUsersState("Sin resultados");
       return;
     }
-    setAdminUsersState("Listo");
+    setAdminUsersState("");
     for (const user of users) {
       const item = document.createElement("div");
       item.className = "booking-item";
@@ -1508,7 +1611,7 @@ async function loadAdminUsers() {
       title.textContent = user.email || "--";
       const meta = document.createElement("div");
       meta.className = "booking-meta";
-      meta.textContent = formatDateCompact(user.createdAt);
+      meta.textContent = `Alta: ${formatDateOnly(user.createdAt)}`;
       item.append(title, meta);
       adminUsersListEl.append(item);
     }
@@ -1540,7 +1643,7 @@ function resetAdminServiceForm() {
   if (adminServiceActiveInput) {
     adminServiceActiveInput.checked = true;
   }
-  setAdminServicesMessage("--");
+  setAdminServicesMessage("");
 }
 
 function startAdminServiceEdit(service) {
@@ -1604,7 +1707,7 @@ async function loadAdminServices() {
       setAdminServicesState("Sin servicios");
       return;
     }
-    setAdminServicesState("Listo");
+    setAdminServicesState("");
     for (const service of services) {
       const item = document.createElement("div");
       item.className = "booking-item";
@@ -1797,7 +1900,8 @@ servicesSelectEl.addEventListener("change", (event) => {
   selectedService = servicesCache.find((service) => service.id === selectedServiceId) || null;
   bookingDateEl.disabled = !selectedServiceId;
   clearAvailability();
-  updateBookingSummary();
+  updateServiceHint();
+  updateServiceSummary();
   updateBookingQuery();
   if (selectedServiceId && bookingDateEl.value) {
     loadAvailability();
@@ -1869,6 +1973,8 @@ function handleAuthHash() {
 setHelperMessage("Usa tu email para recibir un link.");
 setDevLinkState(null);
 clearAvailability();
+updateServiceHint();
+updateServiceSummary();
 setServicesState("Cargando...");
 setBookingsState("Cargando...");
 setConfirmLabel();
