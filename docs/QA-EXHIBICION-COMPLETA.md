@@ -70,6 +70,8 @@ Fallback DEV (cookies bloqueadas):
 3) Agenda: seleccionar fecha -> lista ordenada por hora.
 4) Usuarios: lista read-only con email y createdAt.
 5) Token invalido -> 401 y vuelve a "Acceso restringido".
+6) Servicios: crear servicio -> aparece en lista Admin y en Reservar (servicios activos).
+7) Servicios: editar nombre/duracion y activar/desactivar reflejado en la lista.
 
 Nota: si los endpoints de servicios/disponibilidad/reservas no existen, la UI muestra "Not available yet" sin romper.
 
@@ -114,6 +116,7 @@ Evidencia esperada:
 - invalid-origin: status 200 sin Access-Control-Allow-Origin
 - bookings-post-unauth: status 401 (no 404)
 - bookings-post-auth: status 200/201 (o 409 si ya existe el slot) cuando AUTH_DEV_LINKS=true
+- admin-services: si ADMIN_ACCESS_TOKEN esta definido, crea servicio y lo ve en /api/services
 
 Nota:
 - No se exponen tokens ni cookies completas.
