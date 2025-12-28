@@ -57,21 +57,23 @@ Fallback DEV (cookies bloqueadas):
 3) Servicios cargan (select habilitado).
 4) Elegir servicio + fecha -> disponibilidad carga.
 5) Seleccionar slot -> confirmar reserva -> booking OK o 409 controlado.
-6) Mis reservas lista y permite cancelar (orden startAt desc).
-7) Cancel OK y refresca lista (idempotente si ya estaba cancelada).
+6) Mis reservas: Activas muestra PENDING/CONFIRMED y el Historial muestra CANCELED.
+7) Cancel OK y mueve la reserva al Historial.
 8) Deep link: abrir /atlas/?service=focus&date=YYYY-MM-DD y precarga servicio+fecha.
 9) Presets: Hoy / Manana / Prox. 7 dias actualizan fecha y URL sin recargar.
 10) Reprogramar: en Mis reservas, click "Reprogramar" -> elegir nuevo slot -> confirmar reprogramacion.
-11) Reprogramar: reserva original queda cancelada y la nueva aparece en la lista.
+11) Reprogramar: reserva original queda cancelada y la nueva aparece en Activas.
+12) Estados: PENDING muestra "Pendiente (a confirmar)", CONFIRMED "Confirmada".
 
 ## Admin (Read-only)
 1) Abrir Admin y ver "Acceso restringido".
 2) Ingresar ADMIN_ACCESS_TOKEN y "Conectar" -> estado "Conectado".
 3) Agenda: seleccionar fecha -> lista ordenada por hora.
-4) Usuarios: lista read-only con email y createdAt.
-5) Token invalido -> 401 y vuelve a "Acceso restringido".
-6) Servicios: crear servicio -> aparece en lista Admin y en Reservar (servicios activos).
-7) Servicios: editar nombre/duracion y activar/desactivar reflejado en la lista.
+4) Agenda: si PENDING -> confirmar; si CONFIRMED -> cancelar; CANCELED sin acciones.
+5) Usuarios: lista read-only con email y createdAt.
+6) Token invalido -> 401 y vuelve a "Acceso restringido".
+7) Servicios: crear servicio -> aparece en lista Admin y en Reservar (servicios activos).
+8) Servicios: editar nombre/duracion y activar/desactivar reflejado en la lista.
 
 Nota: si los endpoints de servicios/disponibilidad/reservas no existen, la UI muestra "Not available yet" sin romper.
 
@@ -117,6 +119,7 @@ Evidencia esperada:
 - bookings-post-unauth: status 401 (no 404)
 - bookings-post-auth: status 200/201 (o 409 si ya existe el slot) cuando AUTH_DEV_LINKS=true
 - admin-services: si ADMIN_ACCESS_TOKEN esta definido, crea servicio y lo ve en /api/services
+- admin-booking-confirm: si ADMIN_ACCESS_TOKEN esta definido, confirma booking y devuelve status CONFIRMED
 
 Nota:
 - No se exponen tokens ni cookies completas.
@@ -133,6 +136,7 @@ Checklist visual:
 - Panels y cards con espaciado consistente.
 - Botones con mismo alto, hover suave y estados disabled claros.
 - Jerarquia tipografica clara (titulo > label > note).
+- "Estado del sistema" colapsable al final, cerrado por defecto.
 
 Checklist teclado:
 - Tab order continuo en inputs/select/botones/slots.

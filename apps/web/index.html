@@ -12,30 +12,6 @@
         <h1>Connection Monitor</h1>
         <p class="subtitle">Healthy signal, calm interface, no console noise.</p>
       </header>
-      <section class="panel" data-panel-health aria-busy="false">
-        <div class="status">
-          <span class="dot" data-dot></span>
-          <span data-state aria-live="polite">Loading</span>
-        </div>
-        <div class="grid">
-          <div class="card">
-            <div class="label">Environment</div>
-            <div class="value" data-env>unknown</div>
-          </div>
-          <div class="card">
-            <div class="label">Started</div>
-            <div class="value" data-started>--</div>
-          </div>
-          <div class="card">
-            <div class="label">Uptime (sec)</div>
-            <div class="value" data-uptime>--</div>
-          </div>
-          <div class="card">
-            <div class="label">DB</div>
-            <div class="value" data-db>--</div>
-          </div>
-        </div>
-      </section>
       <section class="panel" id="auth-panel" data-panel-auth aria-busy="false">
         <div class="panel-title">Auth</div>
         <div class="auth-grid">
@@ -107,7 +83,13 @@
         <div class="panel-title">Mis reservas</div>
         <div class="note" data-bookings-state aria-live="polite">Cargando...</div>
         <div class="note" data-bookings-cta aria-live="polite">--</div>
-        <div class="booking-list" data-bookings-list></div>
+        <div class="subsection-title">Activas</div>
+        <div class="booking-list" data-bookings-active-list></div>
+        <details class="history" data-bookings-history>
+          <summary class="history-summary">Historial</summary>
+          <div class="note" data-bookings-history-state aria-live="polite">--</div>
+          <div class="booking-list history-list" data-bookings-history-list></div>
+        </details>
         <button class="button ghost" type="button" data-bookings-retry disabled>Reintentar</button>
       </section>
       <section class="panel" id="admin-panel" data-panel-admin aria-busy="false">
@@ -155,9 +137,36 @@
           </div>
         </div>
       </section>
-      <footer class="footer">
-        <span>Health URL: <strong data-api>--</strong></span>
-      </footer>
+      <details class="panel system-panel" data-panel-health aria-busy="false">
+        <summary class="system-summary">Estado del sistema</summary>
+        <div class="system-body">
+          <div class="status">
+            <span class="dot" data-dot></span>
+            <span data-state aria-live="polite">Loading</span>
+          </div>
+          <div class="grid">
+            <div class="card">
+              <div class="label">Environment</div>
+              <div class="value" data-env>unknown</div>
+            </div>
+            <div class="card">
+              <div class="label">Started</div>
+              <div class="value" data-started>--</div>
+            </div>
+            <div class="card">
+              <div class="label">Uptime (sec)</div>
+              <div class="value" data-uptime>--</div>
+            </div>
+            <div class="card">
+              <div class="label">DB</div>
+              <div class="value" data-db>--</div>
+            </div>
+          </div>
+          <footer class="footer">
+            <span>Health URL: <strong data-api>--</strong></span>
+          </footer>
+        </div>
+      </details>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>

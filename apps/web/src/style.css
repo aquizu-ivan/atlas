@@ -76,6 +76,14 @@ h1 {
   margin-bottom: 20px;
 }
 
+.subsection-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
 .status {
   display: flex;
   align-items: center;
@@ -330,6 +338,64 @@ h1 {
 .booking-meta {
   font-size: 13px;
   color: var(--muted);
+}
+
+.history {
+  border: 1px solid #20283a;
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(9, 13, 22, 0.35);
+}
+
+.history-summary {
+  list-style: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.history-summary::-webkit-details-marker {
+  display: none;
+}
+
+.history[open] .history-summary {
+  margin-bottom: 10px;
+}
+
+.history-list .booking-item {
+  background: rgba(6, 9, 16, 0.45);
+}
+
+.system-panel {
+  padding: 0;
+}
+
+.system-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: var(--panel-pad);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--muted);
+}
+
+.system-summary::-webkit-details-marker {
+  display: none;
+}
+
+.history-summary:focus-visible,
+.system-summary:focus-visible {
+  outline: 2px solid rgba(111, 214, 255, 0.6);
+  outline-offset: 2px;
+}
+
+.system-body {
+  padding: 0 var(--panel-pad) var(--panel-pad);
+  display: grid;
+  gap: 16px;
 }
 
 .note[data-loading="true"] {
