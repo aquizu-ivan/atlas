@@ -134,6 +134,25 @@
             <div class="booking-list" data-admin-users-list></div>
             <button class="button ghost" type="button" data-admin-users-retry disabled>Reintentar</button>
           </div>
+          <div class="card">
+            <div class="label">Servicios</div>
+            <div class="note" data-admin-services-state>--</div>
+            <div class="booking-list" data-admin-services-list></div>
+            <div class="admin-form">
+              <input class="field" type="text" placeholder="Nombre del servicio" data-admin-service-name />
+              <input class="field" type="number" min="10" max="240" placeholder="Duracion (min)" data-admin-service-duration />
+              <label class="note admin-toggle">
+                <input type="checkbox" data-admin-service-active checked />
+                Activo
+              </label>
+              <div class="button-row">
+                <button class="button" type="button" data-admin-service-save>Guardar</button>
+                <button class="button ghost" type="button" data-admin-service-reset>Limpiar</button>
+              </div>
+              <div class="note" data-admin-services-message>--</div>
+            </div>
+            <button class="button ghost" type="button" data-admin-services-retry disabled>Reintentar</button>
+          </div>
         </div>
       </section>
       <footer class="footer">

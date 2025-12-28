@@ -108,6 +108,7 @@ async function main() {
   const pagesUrl = normalizeBaseUrl(args.pagesUrl || process.env.PAGES_URL || DEFAULT_PAGES_URL);
   const apiOrigin = normalizeBaseUrl(args.apiOrigin || process.env.API_ORIGIN || DEFAULT_API_ORIGIN);
   const pagesOrigin = getOrigin(pagesUrl);
+  const adminToken = process.env.ADMIN_ACCESS_TOKEN || "";
 
   if (!pagesOrigin || !apiOrigin) {
     console.error("FAIL: invalid PAGES_URL or API_ORIGIN");
@@ -409,6 +410,74 @@ async function main() {
       headers: {},
       reason: "Network error",
     });
+  }
+
+  // Check J: Admin services (optional)
+  if (!adminToken) {
+    results.push({
+      name: "admin-services",
+      ok: true,
+      status: 0,
+      headers: {},
+      skipped: true,
+      reason: "Skipped (ADMIN_ACCESS_TOKEN not set)",
+    });
+  } else {
+    try {
+      const serviceName = `QA Service ${Date.now()}`;
+      const payload = JSON.stringify({
+        name: serviceName,
+        durationMin: 30,
+        isActive: true,
+      });
+      const createRes = await request("POST", `${apiOrigin}/api/admin/services`, {
+        Authorization: `Bearer ${adminToken}`,
+        "Content-Type": "application/json",
+      }, payload);
+
+      if (createRes.status === 401) {
+        results.push({
+          name: "admin-services",
+          ok: false,
+          status: createRes.status,
+          headers: createRes.headers,
+          reason: "Unauthorized (ADMIN_ACCESS_TOKEN invalid)",
+        });
+      } else if (![200, 201].includes(createRes.status)) {
+        results.push({
+          name: "admin-services",
+          ok: false,
+          status: createRes.status,
+          headers: createRes.headers,
+          reason: "Expected 200/201 from admin services create",
+        });
+      } else {
+        const listRes = await request("GET", `${apiOrigin}/api/services`);
+        let ok = listRes.status === 200;
+        try {
+          const data = JSON.parse(listRes.body);
+          const services = data?.data?.services || [];
+          ok = ok && Array.isArray(services) && services.some((service) => service.name === serviceName);
+        } catch {
+          ok = false;
+        }
+        results.push({
+          name: "admin-services",
+          ok,
+          status: listRes.status,
+          headers: listRes.headers,
+          reason: ok ? "" : "Expected new service visible in /api/services",
+        });
+      }
+    } catch {
+      results.push({
+        name: "admin-services",
+        ok: false,
+        status: 0,
+        headers: {},
+        reason: "Network error",
+      });
+    }
   }
 
   let passCount = 0;

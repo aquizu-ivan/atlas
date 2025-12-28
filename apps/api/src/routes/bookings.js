@@ -5,7 +5,6 @@ import { AppError } from "../errors/AppError.js";
 import { ERROR_CODES } from "../errors/errorCodes.js";
 import { badRequest, conflict, notFound, unauthenticated } from "../errors/httpErrors.js";
 import { getSessionToken, readSession } from "../auth/session.js";
-import { ensureFallbackService } from "../utils/services.js";
 import {
   buildSlots,
   datePartsFromIso,
@@ -52,11 +51,7 @@ router.post("/", async (req, res, next) => {
       where: { id: serviceId },
       select: { durationMinutes: true, id: true },
     });
-    let resolvedService = service;
-    if (!resolvedService) {
-      resolvedService = await ensureFallbackService(prisma, serviceId);
-    }
-    if (!resolvedService) {
+    if (!service) {
       return next(notFound("Service not found", { serviceId }));
     }
 
@@ -73,7 +68,7 @@ router.post("/", async (req, res, next) => {
       }));
     }
 
-    const endAt = new Date(startDate.getTime() + resolvedService.durationMinutes * 60 * 1000);
+    const endAt = new Date(startDate.getTime() + service.durationMinutes * 60 * 1000);
     const booking = await prisma.booking.create({
       data: {
         userId: session.userId,

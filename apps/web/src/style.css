@@ -127,6 +127,21 @@ h1 {
   gap: 16px;
 }
 
+.admin-form {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-toggle input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
 .card {
   background: rgba(12, 16, 28, 0.7);
   border: 1px solid #20283a;

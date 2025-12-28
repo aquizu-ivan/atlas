@@ -53,6 +53,15 @@ const adminAgendaRetryBtn = document.querySelector("[data-admin-agenda-retry]");
 const adminUsersStateEl = document.querySelector("[data-admin-users-state]");
 const adminUsersListEl = document.querySelector("[data-admin-users-list]");
 const adminUsersRetryBtn = document.querySelector("[data-admin-users-retry]");
+const adminServicesStateEl = document.querySelector("[data-admin-services-state]");
+const adminServicesListEl = document.querySelector("[data-admin-services-list]");
+const adminServiceNameInput = document.querySelector("[data-admin-service-name]");
+const adminServiceDurationInput = document.querySelector("[data-admin-service-duration]");
+const adminServiceActiveInput = document.querySelector("[data-admin-service-active]");
+const adminServiceSaveBtn = document.querySelector("[data-admin-service-save]");
+const adminServiceResetBtn = document.querySelector("[data-admin-service-reset]");
+const adminServicesMessageEl = document.querySelector("[data-admin-services-message]");
+const adminServicesRetryBtn = document.querySelector("[data-admin-services-retry]");
 function normalizeBase(value) {
   if (!value) return "";
   return value.trim().replace(/\/+$/, "");
@@ -245,6 +254,18 @@ function setAdminAgendaState(message) {
 function setAdminUsersState(message) {
   if (adminUsersStateEl) {
     adminUsersStateEl.textContent = message;
+  }
+}
+
+function setAdminServicesState(message) {
+  if (adminServicesStateEl) {
+    adminServicesStateEl.textContent = message;
+  }
+}
+
+function setAdminServicesMessage(message) {
+  if (adminServicesMessageEl) {
+    adminServicesMessageEl.textContent = message;
   }
 }
 
@@ -500,6 +521,7 @@ let selectedService = null;
 let selectedSlot = "";
 let selectedDate = "";
 let rescheduleContext = null;
+let adminServiceEditingId = "";
 const initialBookingQuery = readBookingQuery();
 
 async function requestLink() {
@@ -1240,6 +1262,197 @@ async function loadAdminUsers() {
   }
 }
 
+function parseAdminDuration(value) {
+  const parsed = Number.parseInt(String(value), 10);
+  if (!Number.isFinite(parsed) || parsed < 10 || parsed > 240) {
+    return null;
+  }
+  return parsed;
+}
+
+function resetAdminServiceForm() {
+  adminServiceEditingId = "";
+  if (adminServiceNameInput) {
+    adminServiceNameInput.value = "";
+  }
+  if (adminServiceDurationInput) {
+    adminServiceDurationInput.value = "";
+  }
+  if (adminServiceActiveInput) {
+    adminServiceActiveInput.checked = true;
+  }
+  setAdminServicesMessage("--");
+}
+
+function startAdminServiceEdit(service) {
+  if (!service) {
+    return;
+  }
+  adminServiceEditingId = service.id;
+  if (adminServiceNameInput) {
+    adminServiceNameInput.value = service.name || "";
+  }
+  if (adminServiceDurationInput) {
+    adminServiceDurationInput.value = String(service.durationMin ?? "");
+  }
+  if (adminServiceActiveInput) {
+    adminServiceActiveInput.checked = Boolean(service.isActive);
+  }
+  setAdminServicesMessage("Editando servicio.");
+}
+
+async function loadAdminServices() {
+  adminServicesListEl.innerHTML = "";
+  toggleRetry(adminServicesRetryBtn, false);
+  if (!getStoredAdminToken()) {
+    setAdminServicesState("Acceso restringido.");
+    return;
+  }
+  setAdminServicesState("Cargando...");
+  try {
+    const response = await adminFetch(`${apiBaseUrl}/admin/services`);
+    const data = await response.json().catch(() => null);
+    if (response.status === 401) {
+      setStoredAdminToken("");
+      setAdminStatus("Acceso restringido.");
+      setAdminServicesState("Acceso restringido.");
+      toggleRetry(adminServicesRetryBtn, true);
+      return;
+    }
+    if (!response.ok || !data || !data.ok) {
+      setAdminServicesState("No se pudo conectar");
+      toggleRetry(adminServicesRetryBtn, true);
+      return;
+    }
+    const services = data?.data?.services || [];
+    if (!Array.isArray(services) || services.length === 0) {
+      setAdminServicesState("Sin servicios");
+      return;
+    }
+    setAdminServicesState("Listo");
+    for (const service of services) {
+      const item = document.createElement("div");
+      item.className = "booking-item";
+
+      const title = document.createElement("div");
+      title.className = "value";
+      title.textContent = service.name || "--";
+
+      const meta = document.createElement("div");
+      meta.className = "booking-meta";
+      const statusLabel = service.isActive ? "Activo" : "Inactivo";
+      meta.textContent = `${service.durationMin} min - ${statusLabel}`;
+
+      const actions = document.createElement("div");
+      actions.className = "booking-actions";
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "button ghost";
+      editBtn.textContent = "Editar";
+      editBtn.addEventListener("click", () => startAdminServiceEdit(service));
+      actions.append(editBtn);
+
+      const toggleBtn = document.createElement("button");
+      toggleBtn.type = "button";
+      toggleBtn.className = "button ghost";
+      toggleBtn.textContent = service.isActive ? "Desactivar" : "Activar";
+      toggleBtn.addEventListener("click", async () => {
+        toggleBtn.disabled = true;
+        setAdminServicesMessage("Actualizando estado...");
+        try {
+          const response = await adminFetch(`${apiBaseUrl}/admin/services/${service.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isActive: !service.isActive }),
+          });
+          const data = await response.json().catch(() => null);
+          if (!response.ok || !data || !data.ok) {
+            setAdminServicesMessage("No se pudo actualizar.");
+          } else {
+            setAdminServicesMessage("Estado actualizado.");
+            await loadAdminServices();
+            await loadServices();
+          }
+        } catch {
+          setAdminServicesMessage("No se pudo conectar.");
+        } finally {
+          toggleBtn.disabled = false;
+        }
+      });
+      actions.append(toggleBtn);
+
+      item.append(title, meta, actions);
+      adminServicesListEl.append(item);
+    }
+  } catch {
+    setAdminServicesState("No se pudo conectar");
+    toggleRetry(adminServicesRetryBtn, true);
+  }
+}
+
+async function saveAdminService() {
+  if (!getStoredAdminToken()) {
+    setAdminServicesMessage("Acceso restringido.");
+    return;
+  }
+  const name = (adminServiceNameInput.value || "").trim();
+  const durationMin = parseAdminDuration(adminServiceDurationInput.value);
+  const isActive = adminServiceActiveInput.checked;
+
+  if (!name || name.length < 2 || name.length > 60) {
+    setAdminServicesMessage("Nombre invalido.");
+    return;
+  }
+  if (!durationMin) {
+    setAdminServicesMessage("Duracion invalida.");
+    return;
+  }
+
+  setButtonLoading(adminServiceSaveBtn, true);
+  setAdminServicesMessage(adminServiceEditingId ? "Guardando cambios..." : "Creando servicio...");
+
+  try {
+    const payload = {
+      name,
+      durationMin,
+      isActive,
+    };
+    const url = adminServiceEditingId
+      ? `${apiBaseUrl}/admin/services/${adminServiceEditingId}`
+      : `${apiBaseUrl}/admin/services`;
+    const method = adminServiceEditingId ? "PATCH" : "POST";
+    const response = await adminFetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json().catch(() => null);
+    if (response.status === 401) {
+      setStoredAdminToken("");
+      setAdminStatus("Acceso restringido.");
+      setAdminServicesMessage("Acceso restringido.");
+      return;
+    }
+    if (response.status === 409) {
+      setAdminServicesMessage("Servicio ya existe.");
+      return;
+    }
+    if (!response.ok || !data || !data.ok) {
+      setAdminServicesMessage("No se pudo guardar.");
+      return;
+    }
+    setAdminServicesMessage(adminServiceEditingId ? "Servicio actualizado." : "Servicio creado.");
+    resetAdminServiceForm();
+    await loadAdminServices();
+    await loadServices();
+  } catch {
+    setAdminServicesMessage("No se pudo conectar.");
+  } finally {
+    setButtonLoading(adminServiceSaveBtn, false);
+  }
+}
+
 function connectAdmin() {
   const token = (adminTokenInput.value || "").trim();
   if (!token) {
@@ -1251,6 +1464,7 @@ function connectAdmin() {
   setAdminStatus("Conectado.");
   loadAdminAgenda();
   loadAdminUsers();
+  loadAdminServices();
 }
 
 authRequestBtn.addEventListener("click", requestLink);
@@ -1268,6 +1482,9 @@ bookingsRetryBtn.addEventListener("click", loadBookings);
 adminConnectBtn.addEventListener("click", connectAdmin);
 adminAgendaRetryBtn.addEventListener("click", loadAdminAgenda);
 adminUsersRetryBtn.addEventListener("click", loadAdminUsers);
+adminServicesRetryBtn.addEventListener("click", loadAdminServices);
+adminServiceSaveBtn.addEventListener("click", saveAdminService);
+adminServiceResetBtn.addEventListener("click", resetAdminServiceForm);
 servicesSelectEl.addEventListener("change", (event) => {
   if (rescheduleContext) {
     setBookingMessage("Elige un nuevo horario para reprogramar.");
@@ -1352,6 +1569,7 @@ clearAvailability();
 setServicesState("Cargando...");
 setBookingsState("Cargando...");
 setConfirmLabel();
+resetAdminServiceForm();
 
 const authHash = handleAuthHash();
 const authQuery = authHash ? null : handleAuthQuery();
@@ -1371,8 +1589,10 @@ if (getStoredAdminToken()) {
   setAdminStatus("Conectado.");
   loadAdminAgenda();
   loadAdminUsers();
+  loadAdminServices();
 } else {
   setAdminStatus("Acceso restringido.");
   setAdminAgendaState("Acceso restringido.");
   setAdminUsersState("Acceso restringido.");
+  setAdminServicesState("Acceso restringido.");
 }
