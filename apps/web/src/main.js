@@ -73,6 +73,8 @@ const adminServicesRetryBtn = document.querySelector("[data-admin-services-retry
 const adminModeToggleBtn = document.querySelector("[data-admin-mode-toggle]");
 const adminModeNoteEl = document.querySelector("[data-admin-mode-note]");
 const adminBodyEl = document.querySelector("[data-admin-body]");
+const adminPanelsEl = document.querySelector("[data-admin-panels]");
+const adminAccessNoteEl = document.querySelector("[data-admin-access-note]");
 function normalizeBase(value) {
   if (!value) return "";
   return value.trim().replace(/\/+$/, "");
@@ -316,11 +318,23 @@ function setAdminMode(enabled) {
 
   if (getStoredAdminToken()) {
     setAdminStatus("Conectado.");
+    if (adminAccessNoteEl) {
+      adminAccessNoteEl.textContent = "Modo admin activo.";
+    }
+    if (adminPanelsEl) {
+      adminPanelsEl.hidden = false;
+    }
     loadAdminAgenda();
     loadAdminUsers();
     loadAdminServices();
   } else {
     setAdminStatus("Acceso restringido.");
+    if (adminAccessNoteEl) {
+      adminAccessNoteEl.textContent = "Solo para administracion.";
+    }
+    if (adminPanelsEl) {
+      adminPanelsEl.hidden = true;
+    }
     setAdminAgendaState("Acceso restringido.");
     setAdminUsersState("Acceso restringido.");
     setAdminServicesState("Acceso restringido.");
@@ -1356,6 +1370,9 @@ async function loadAdminAgenda() {
   toggleRetry(adminAgendaRetryBtn, false);
   if (!getStoredAdminToken()) {
     setAdminAgendaState("Acceso restringido.");
+    if (adminPanelsEl) {
+      adminPanelsEl.hidden = true;
+    }
     setNoteLoading(adminAgendaStateEl, false);
     setBusy(adminPanel, false);
     return;
@@ -1375,6 +1392,12 @@ async function loadAdminAgenda() {
       setStoredAdminToken("");
       setAdminStatus("Acceso restringido.");
       setAdminAgendaState("Acceso restringido.");
+      if (adminAccessNoteEl) {
+        adminAccessNoteEl.textContent = "Solo para administracion.";
+      }
+      if (adminPanelsEl) {
+        adminPanelsEl.hidden = true;
+      }
       toggleRetry(adminAgendaRetryBtn, true);
       return;
     }
@@ -1382,6 +1405,9 @@ async function loadAdminAgenda() {
       setAdminAgendaState("No se pudo conectar");
       toggleRetry(adminAgendaRetryBtn, true);
       return;
+    }
+    if (adminPanelsEl && getStoredAdminMode()) {
+      adminPanelsEl.hidden = false;
     }
     const bookings = data?.data?.bookings || [];
     if (!Array.isArray(bookings) || bookings.length === 0) {
@@ -1436,6 +1462,9 @@ async function loadAdminUsers() {
   toggleRetry(adminUsersRetryBtn, false);
   if (!getStoredAdminToken()) {
     setAdminUsersState("Acceso restringido.");
+    if (adminPanelsEl) {
+      adminPanelsEl.hidden = true;
+    }
     setNoteLoading(adminUsersStateEl, false);
     setBusy(adminPanel, false);
     return;
@@ -1448,6 +1477,12 @@ async function loadAdminUsers() {
       setStoredAdminToken("");
       setAdminStatus("Acceso restringido.");
       setAdminUsersState("Acceso restringido.");
+      if (adminAccessNoteEl) {
+        adminAccessNoteEl.textContent = "Solo para administracion.";
+      }
+      if (adminPanelsEl) {
+        adminPanelsEl.hidden = true;
+      }
       toggleRetry(adminUsersRetryBtn, true);
       return;
     }
@@ -1455,6 +1490,9 @@ async function loadAdminUsers() {
       setAdminUsersState("No se pudo conectar");
       toggleRetry(adminUsersRetryBtn, true);
       return;
+    }
+    if (adminPanelsEl && getStoredAdminMode()) {
+      adminPanelsEl.hidden = false;
     }
     const users = data?.data?.users || [];
     if (!Array.isArray(users) || users.length === 0) {
@@ -1529,6 +1567,9 @@ async function loadAdminServices() {
   toggleRetry(adminServicesRetryBtn, false);
   if (!getStoredAdminToken()) {
     setAdminServicesState("Acceso restringido.");
+    if (adminPanelsEl) {
+      adminPanelsEl.hidden = true;
+    }
     setNoteLoading(adminServicesStateEl, false);
     setBusy(adminPanel, false);
     return;
@@ -1541,6 +1582,12 @@ async function loadAdminServices() {
       setStoredAdminToken("");
       setAdminStatus("Acceso restringido.");
       setAdminServicesState("Acceso restringido.");
+      if (adminAccessNoteEl) {
+        adminAccessNoteEl.textContent = "Solo para administracion.";
+      }
+      if (adminPanelsEl) {
+        adminPanelsEl.hidden = true;
+      }
       toggleRetry(adminServicesRetryBtn, true);
       return;
     }
@@ -1548,6 +1595,9 @@ async function loadAdminServices() {
       setAdminServicesState("No se pudo conectar");
       toggleRetry(adminServicesRetryBtn, true);
       return;
+    }
+    if (adminPanelsEl && getStoredAdminMode()) {
+      adminPanelsEl.hidden = false;
     }
     const services = data?.data?.services || [];
     if (!Array.isArray(services) || services.length === 0) {
@@ -1622,6 +1672,9 @@ async function loadAdminServices() {
 async function saveAdminService() {
   if (!getStoredAdminToken()) {
     setAdminServicesMessage("Acceso restringido.");
+    if (adminPanelsEl) {
+      adminPanelsEl.hidden = true;
+    }
     return;
   }
   const name = (adminServiceNameInput.value || "").trim();
@@ -1687,11 +1740,23 @@ function connectAdmin() {
   const token = (adminTokenInput.value || "").trim();
   if (!token) {
     setAdminStatus("Acceso restringido.");
+    if (adminAccessNoteEl) {
+      adminAccessNoteEl.textContent = "Solo para administracion.";
+    }
+    if (adminPanelsEl) {
+      adminPanelsEl.hidden = true;
+    }
     return;
   }
   setStoredAdminToken(token);
   adminTokenInput.value = "";
   setAdminStatus("Conectado.");
+  if (adminAccessNoteEl) {
+    adminAccessNoteEl.textContent = "Modo admin activo.";
+  }
+  if (adminPanelsEl) {
+    adminPanelsEl.hidden = false;
+  }
   if (getStoredAdminMode()) {
     loadAdminAgenda();
     loadAdminUsers();

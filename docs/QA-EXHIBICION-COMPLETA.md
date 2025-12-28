@@ -161,3 +161,11 @@ Checklist modo admin:
 Checklist limpieza de ruido:
 - No hay URLs ni diagnosticos fuera de "Estado del sistema".
 - Labels tecnicos solo dentro de "Estado del sistema" o Modo admin.
+
+## TICKET-31 — Premium UI Pass
+1) Zoom 125% y 150%: Auth y Admin sin encimados (inputs + botones con wrap limpio).
+2) Reservar: lista de horarios con scroll interno (no estira infinito).
+3) Confirmar: panel con resumen y CTA centrada, sin vacios.
+4) Mis reservas: Activas/Historial con jerarquia clara y sin encimados.
+5) Admin: modo entendible (Acceso arriba; resto solo si conectado).
+6) Estado del sistema sigue colapsado y sin ruido en plano usuario.
