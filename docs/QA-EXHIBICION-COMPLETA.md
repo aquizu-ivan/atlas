@@ -169,3 +169,9 @@ Checklist limpieza de ruido:
 4) Mis reservas: Activas/Historial plegables con hover suave en cards.
 5) Admin: secciones plegables + usuarios muestran Alta (dd/mm/aaaa).
 6) Estado del sistema sigue colapsado y sin ruido en plano usuario.
+
+## TICKET-33 - IAQUIZU Identity Pass
+1) Hero: solo una vez ATLAS (eyebrow IAQUIZU + H1 ATLAS).
+2) Acordeones: cue consistente (filete izquierdo + chevron) en Mis reservas/Admin/Estado del sistema.
+3) Mis reservas: Activas/Historial con aire y hover suave, sin ruido extra.
+4) Zoom 100% / 125% / 150% sin solapes en summaries e inputs.
