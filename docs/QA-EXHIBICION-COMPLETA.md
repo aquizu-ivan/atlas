@@ -127,3 +127,19 @@ Nota:
 - pnpm -r run build
 - pnpm -C apps/web run dev
 - Abrir http://localhost:5173
+
+## Pulido UX final
+Checklist visual:
+- Panels y cards con espaciado consistente.
+- Botones con mismo alto, hover suave y estados disabled claros.
+- Jerarquia tipografica clara (titulo > label > note).
+
+Checklist teclado:
+- Tab order continuo en inputs/select/botones/slots.
+- Focus visible consistente en botones, inputs y slots.
+- Mensajes de estado anuncian cambios (aria-live polite).
+
+Checklist estados:
+- Loading/empty/error/success en Auth, Reservar, Mis reservas, Admin.
+- Errores por causa: 401/409/400/5xx y network con mensajes humanos.
+- Sin flashes bruscos al refrescar listas (reservas, admin servicios).

@@ -43,6 +43,11 @@ const bookingsStateEl = document.querySelector("[data-bookings-state]");
 const bookingsCtaEl = document.querySelector("[data-bookings-cta]");
 const bookingsListEl = document.querySelector("[data-bookings-list]");
 const bookingsRetryBtn = document.querySelector("[data-bookings-retry]");
+const healthPanel = document.querySelector("[data-panel-health]");
+const authPanel = document.querySelector("[data-panel-auth]");
+const bookingPanel = document.querySelector("[data-panel-booking]");
+const bookingsPanel = document.querySelector("[data-panel-bookings]");
+const adminPanel = document.querySelector("[data-panel-admin]");
 const adminStatusEl = document.querySelector("[data-admin-status]");
 const adminTokenInput = document.querySelector("[data-admin-token]");
 const adminConnectBtn = document.querySelector("[data-admin-connect]");
@@ -191,6 +196,20 @@ function setButtonLoading(button, isLoading) {
     button.dataset.loading = "true";
   } else {
     delete button.dataset.loading;
+  }
+}
+
+function setBusy(element, isBusy) {
+  if (!element) return;
+  element.setAttribute("aria-busy", isBusy ? "true" : "false");
+}
+
+function setNoteLoading(element, isLoading) {
+  if (!element) return;
+  if (isLoading) {
+    element.dataset.loading = "true";
+  } else {
+    delete element.dataset.loading;
   }
 }
 
@@ -476,6 +495,7 @@ function calculateEndAt(startAt, durationMin) {
 }
 
 async function loadHealth() {
+  setBusy(healthPanel, true);
   setState("Loading", "pending");
   try {
     const response = await fetch(healthUrl);
@@ -511,6 +531,8 @@ async function loadHealth() {
     dbEl.textContent = data.db && data.db.configured ? "connected" : "not connected";
   } catch (error) {
     setError("Network error");
+  } finally {
+    setBusy(healthPanel, false);
   }
 }
 
@@ -532,6 +554,8 @@ async function requestLink() {
   }
 
   authRequestBtn.disabled = true;
+  setBusy(authPanel, true);
+  setNoteLoading(authMessageEl, true);
   setAuthMessage("Enviando link...");
   devLink = null;
   setDevLinkState(null);
@@ -563,6 +587,8 @@ async function requestLink() {
     setAuthMessage("Error de red");
   } finally {
     authRequestBtn.disabled = false;
+    setNoteLoading(authMessageEl, false);
+    setBusy(authPanel, false);
   }
 }
 
@@ -601,6 +627,8 @@ function openDevLink() {
 
 async function refreshSession() {
   authRefreshBtn.disabled = true;
+  setBusy(authPanel, true);
+  setNoteLoading(authMessageEl, true);
   setAuthMessage("Verificando sesion...");
 
   try {
@@ -626,11 +654,15 @@ async function refreshSession() {
     setAuthMessage("Error de red");
   } finally {
     authRefreshBtn.disabled = false;
+    setNoteLoading(authMessageEl, false);
+    setBusy(authPanel, false);
   }
 }
 
 async function logout() {
   authLogoutBtn.disabled = true;
+  setBusy(authPanel, true);
+  setNoteLoading(authMessageEl, true);
   setAuthMessage("Cerrando sesion...");
 
   try {
@@ -659,10 +691,14 @@ async function logout() {
     setAuthMessage("Error de red");
   } finally {
     authLogoutBtn.disabled = false;
+    setNoteLoading(authMessageEl, false);
+    setBusy(authPanel, false);
   }
 }
 
 async function loadServices() {
+  setBusy(bookingPanel, true);
+  setNoteLoading(servicesStateEl, true);
   setServicesState("Cargando...");
   servicesEmptyEl.textContent = "--";
   servicesSelectEl.disabled = true;
@@ -733,6 +769,9 @@ async function loadServices() {
   } catch {
     setServicesState("No se pudo conectar");
     toggleRetry(servicesRetryBtn, true);
+  } finally {
+    setNoteLoading(servicesStateEl, false);
+    setBusy(bookingPanel, false);
   }
 }
 
@@ -835,10 +874,12 @@ async function loadAvailability() {
   if (!selectedServiceId || !selectedDate) {
     setAvailabilityState("Selecciona servicio y fecha");
     availabilitySlotsEl.innerHTML = "";
+    setNoteLoading(availabilityStateEl, false);
     return;
   }
 
   setAvailabilityState("Cargando...");
+  setNoteLoading(availabilityStateEl, true);
   setBookingMessage("--");
   setBookingConfirmation("--");
   availabilitySlotsEl.innerHTML = "";
@@ -888,6 +929,8 @@ async function loadAvailability() {
   } catch {
     setAvailabilityState("No se pudo conectar");
     toggleRetry(availabilityRetryBtn, true);
+  } finally {
+    setNoteLoading(availabilityStateEl, false);
   }
 }
 
@@ -939,6 +982,7 @@ async function createBooking() {
   }
 
   setBookingMessage(isReschedule ? "Reprogramando..." : "Reservando...");
+  setNoteLoading(bookingMessageEl, true);
   setBookingConfirmation("--");
   const buttons = availabilitySlotsEl.querySelectorAll("button");
   buttons.forEach((button) => { button.disabled = true; });
@@ -1038,10 +1082,13 @@ async function createBooking() {
     buttons.forEach((button) => { button.disabled = false; });
     setButtonLoading(bookingConfirmBtn, false);
     bookingConfirmBtn.disabled = !selectedSlot;
+    setNoteLoading(bookingMessageEl, false);
   }
 }
 
 async function loadBookings() {
+  setBusy(bookingsPanel, true);
+  setNoteLoading(bookingsStateEl, true);
   setBookingsState("Cargando...");
   bookingsListEl.innerHTML = "";
   setBookingsCta(null, false);
@@ -1117,6 +1164,9 @@ async function loadBookings() {
   } catch {
     setBookingsState("No se pudo conectar");
     toggleRetry(bookingsRetryBtn, true);
+  } finally {
+    setNoteLoading(bookingsStateEl, false);
+    setBusy(bookingsPanel, false);
   }
 }
 
@@ -1127,6 +1177,7 @@ async function cancelBooking(bookingId) {
   }
 
   setBookingsState("Cancelando...");
+  setNoteLoading(bookingsStateEl, true);
   setBookingsCta(null, false);
   toggleRetry(bookingsRetryBtn, false);
   try {
@@ -1158,19 +1209,27 @@ async function cancelBooking(bookingId) {
   } catch {
     setBookingsState("No se pudo conectar");
     toggleRetry(bookingsRetryBtn, true);
+  } finally {
+    setNoteLoading(bookingsStateEl, false);
   }
 }
 
 async function loadAdminAgenda() {
+  setBusy(adminPanel, true);
+  setNoteLoading(adminAgendaStateEl, true);
   adminAgendaListEl.innerHTML = "";
   toggleRetry(adminAgendaRetryBtn, false);
   if (!getStoredAdminToken()) {
     setAdminAgendaState("Acceso restringido.");
+    setNoteLoading(adminAgendaStateEl, false);
+    setBusy(adminPanel, false);
     return;
   }
   const date = adminDateInput.value;
   if (!isValidDateString(date)) {
     setAdminAgendaState("Fecha invalida");
+    setNoteLoading(adminAgendaStateEl, false);
+    setBusy(adminPanel, false);
     return;
   }
   setAdminAgendaState("Cargando...");
@@ -1212,14 +1271,21 @@ async function loadAdminAgenda() {
   } catch {
     setAdminAgendaState("No se pudo conectar");
     toggleRetry(adminAgendaRetryBtn, true);
+  } finally {
+    setNoteLoading(adminAgendaStateEl, false);
+    setBusy(adminPanel, false);
   }
 }
 
 async function loadAdminUsers() {
+  setBusy(adminPanel, true);
+  setNoteLoading(adminUsersStateEl, true);
   adminUsersListEl.innerHTML = "";
   toggleRetry(adminUsersRetryBtn, false);
   if (!getStoredAdminToken()) {
     setAdminUsersState("Acceso restringido.");
+    setNoteLoading(adminUsersStateEl, false);
+    setBusy(adminPanel, false);
     return;
   }
   setAdminUsersState("Cargando...");
@@ -1259,6 +1325,9 @@ async function loadAdminUsers() {
   } catch {
     setAdminUsersState("No se pudo conectar");
     toggleRetry(adminUsersRetryBtn, true);
+  } finally {
+    setNoteLoading(adminUsersStateEl, false);
+    setBusy(adminPanel, false);
   }
 }
 
@@ -1302,10 +1371,14 @@ function startAdminServiceEdit(service) {
 }
 
 async function loadAdminServices() {
+  setBusy(adminPanel, true);
+  setNoteLoading(adminServicesStateEl, true);
   adminServicesListEl.innerHTML = "";
   toggleRetry(adminServicesRetryBtn, false);
   if (!getStoredAdminToken()) {
     setAdminServicesState("Acceso restringido.");
+    setNoteLoading(adminServicesStateEl, false);
+    setBusy(adminPanel, false);
     return;
   }
   setAdminServicesState("Cargando...");
@@ -1388,6 +1461,9 @@ async function loadAdminServices() {
   } catch {
     setAdminServicesState("No se pudo conectar");
     toggleRetry(adminServicesRetryBtn, true);
+  } finally {
+    setNoteLoading(adminServicesStateEl, false);
+    setBusy(adminPanel, false);
   }
 }
 
@@ -1411,6 +1487,7 @@ async function saveAdminService() {
 
   setButtonLoading(adminServiceSaveBtn, true);
   setAdminServicesMessage(adminServiceEditingId ? "Guardando cambios..." : "Creando servicio...");
+  setNoteLoading(adminServicesMessageEl, true);
 
   try {
     const payload = {
@@ -1450,6 +1527,7 @@ async function saveAdminService() {
     setAdminServicesMessage("No se pudo conectar.");
   } finally {
     setButtonLoading(adminServiceSaveBtn, false);
+    setNoteLoading(adminServicesMessageEl, false);
   }
 }
 
