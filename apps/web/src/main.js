@@ -70,6 +70,9 @@ const adminServiceSaveBtn = document.querySelector("[data-admin-service-save]");
 const adminServiceResetBtn = document.querySelector("[data-admin-service-reset]");
 const adminServicesMessageEl = document.querySelector("[data-admin-services-message]");
 const adminServicesRetryBtn = document.querySelector("[data-admin-services-retry]");
+const adminModeToggleBtn = document.querySelector("[data-admin-mode-toggle]");
+const adminModeNoteEl = document.querySelector("[data-admin-mode-note]");
+const adminBodyEl = document.querySelector("[data-admin-body]");
 function normalizeBase(value) {
   if (!value) return "";
   return value.trim().replace(/\/+$/, "");
@@ -127,6 +130,7 @@ const authBaseUrl = `${apiOrigin}/api/auth`;
 const apiBaseUrl = `${apiOrigin}/api`;
 const devTokenStorageKey = "atlas_dev_token";
 const adminTokenStorageKey = "atlas_admin_token";
+const adminModeStorageKey = "atlas_admin_mode";
 
 apiEl.textContent = healthUrl;
 
@@ -153,7 +157,7 @@ function setAuthMessage(message) {
 }
 
 function setSessionState(isActive, email) {
-  authStatusEl.textContent = isActive ? "Online" : "Offline";
+  authStatusEl.textContent = isActive ? "Sesion activa" : "Sesion cerrada";
   authUserEl.textContent = isActive && email ? email : "--";
 }
 
@@ -297,11 +301,53 @@ function setAdminServicesMessage(message) {
   }
 }
 
+function setAdminMode(enabled) {
+  if (!adminBodyEl || !adminModeToggleBtn || !adminModeNoteEl) {
+    return;
+  }
+  setStoredAdminMode(enabled);
+  adminBodyEl.hidden = !enabled;
+  adminModeToggleBtn.textContent = enabled ? "Desactivar modo admin" : "Activar modo admin";
+  adminModeNoteEl.textContent = enabled ? "Modo admin activo." : "Solo para administracion.";
+
+  if (!enabled) {
+    return;
+  }
+
+  if (getStoredAdminToken()) {
+    setAdminStatus("Conectado.");
+    loadAdminAgenda();
+    loadAdminUsers();
+    loadAdminServices();
+  } else {
+    setAdminStatus("Acceso restringido.");
+    setAdminAgendaState("Acceso restringido.");
+    setAdminUsersState("Acceso restringido.");
+    setAdminServicesState("Acceso restringido.");
+  }
+}
+
 function getStoredAdminToken() {
   try {
     return sessionStorage.getItem(adminTokenStorageKey) || "";
   } catch {
     return "";
+  }
+}
+
+function getStoredAdminMode() {
+  try {
+    return sessionStorage.getItem(adminModeStorageKey) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function setStoredAdminMode(enabled) {
+  try {
+    sessionStorage.setItem(adminModeStorageKey, enabled ? "true" : "false");
+  } catch {
+    // Ignore storage errors.
   }
 }
 
@@ -1056,7 +1102,7 @@ async function createBooking() {
     const data = await response.json().catch(() => null);
 
     if (response.status === 401) {
-      setBookingMessage("Necesitas iniciar sesion. Usa el panel Auth.");
+      setBookingMessage("Necesitas iniciar sesion. Usa el panel de acceso.");
       return;
     }
     if (response.status === 409) {
@@ -1646,9 +1692,11 @@ function connectAdmin() {
   setStoredAdminToken(token);
   adminTokenInput.value = "";
   setAdminStatus("Conectado.");
-  loadAdminAgenda();
-  loadAdminUsers();
-  loadAdminServices();
+  if (getStoredAdminMode()) {
+    loadAdminAgenda();
+    loadAdminUsers();
+    loadAdminServices();
+  }
 }
 
 authRequestBtn.addEventListener("click", requestLink);
@@ -1669,6 +1717,12 @@ adminUsersRetryBtn.addEventListener("click", loadAdminUsers);
 adminServicesRetryBtn.addEventListener("click", loadAdminServices);
 adminServiceSaveBtn.addEventListener("click", saveAdminService);
 adminServiceResetBtn.addEventListener("click", resetAdminServiceForm);
+if (adminModeToggleBtn) {
+  adminModeToggleBtn.addEventListener("click", () => {
+    const next = !getStoredAdminMode();
+    setAdminMode(next);
+  });
+}
 servicesSelectEl.addEventListener("change", (event) => {
   if (rescheduleContext) {
     setBookingMessage("Elige un nuevo horario para reprogramar.");
@@ -1769,14 +1823,4 @@ if (adminDateInput) {
   adminDateInput.value = todayValue;
   adminDateInput.addEventListener("change", loadAdminAgenda);
 }
-if (getStoredAdminToken()) {
-  setAdminStatus("Conectado.");
-  loadAdminAgenda();
-  loadAdminUsers();
-  loadAdminServices();
-} else {
-  setAdminStatus("Acceso restringido.");
-  setAdminAgendaState("Acceso restringido.");
-  setAdminUsersState("Acceso restringido.");
-  setAdminServicesState("Acceso restringido.");
-}
+setAdminMode(getStoredAdminMode());

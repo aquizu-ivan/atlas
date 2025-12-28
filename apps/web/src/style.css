@@ -76,6 +76,38 @@ h1 {
   margin-bottom: 20px;
 }
 
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.panel-header .panel-title {
+  margin-bottom: 6px;
+}
+
+.panel-header .panel-copy {
+  margin-bottom: 0;
+}
+
+.panel-copy {
+  margin: 0 0 16px;
+  color: #b8c3d6;
+  font-size: 14px;
+}
+
+.subsection {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.subsection:last-child {
+  margin-bottom: 0;
+}
+
 .subsection-title {
   font-size: 12px;
   text-transform: uppercase;
@@ -396,6 +428,13 @@ h1 {
   padding: 0 var(--panel-pad) var(--panel-pad);
   display: grid;
   gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .note[data-loading="true"] {

@@ -38,8 +38,8 @@ Precondicion: AUTH_DEV_LINKS=true para mostrar acceso DEV en UI.
 2) En Auth, usar request-link con email demo.
 3) Si AUTH_DEV_LINKS=true, debe aparecer un acceso DEV con botones Copiar/Abrir.
 4) Abrir el link recibido (email o acceso DEV) y verificar redirect a /atlas/?auth=success o /atlas/#auth=success&devToken=TOKEN.
-4) "Refrescar" debe mostrar Sesion activa con email.
-5) Logout y luego "Refrescar" debe mostrar "Necesitas iniciar sesion".
+4) "Actualizar" debe mostrar Sesion activa con email.
+5) Cerrar sesion y luego "Actualizar" debe mostrar "Necesitas iniciar sesion".
 6) DevTools -> Application -> Cookies:
    - Debe existir atlas_session con Secure=true y SameSite=None.
    - La cookie es HttpOnly y no debe ser visible en JS.
@@ -48,7 +48,7 @@ Fallback DEV (cookies bloqueadas):
 1) Abrir Pages y enviar request-link.
 2) Abrir devLink -> vuelve a /atlas/#auth=success&devToken=TOKEN.
 3) La UI guarda devToken en sessionStorage y limpia el hash.
-4) Refrescar sesion -> 200 usando Authorization: Bearer devToken.
+4) Actualizar sesion -> 200 usando Authorization: Bearer devToken.
 5) Reservar y ver Mis reservas sin 401.
 
 ## Booking Flow (Web)
@@ -147,3 +147,17 @@ Checklist estados:
 - Loading/empty/error/success en Auth, Reservar, Mis reservas, Admin.
 - Errores por causa: 401/409/400/5xx y network con mensajes humanos.
 - Sin flashes bruscos al refrescar listas (reservas, admin servicios).
+
+## Experiencia final usuario
+Checklist orden editorial:
+- Reservar -> Mis reservas -> Modo admin -> Estado del sistema (colapsado).
+- Cada seccion tiene titulo y linea guia.
+
+Checklist modo admin:
+- Boton "Activar modo admin" visible y Admin oculto por defecto.
+- Al activar, muestra token + agenda + usuarios + servicios.
+- Al desactivar, vuelve a ocultar y mantiene token en sessionStorage.
+
+Checklist limpieza de ruido:
+- No hay URLs ni diagnosticos fuera de "Estado del sistema".
+- Labels tecnicos solo dentro de "Estado del sistema" o Modo admin.
