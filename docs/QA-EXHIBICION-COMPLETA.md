@@ -61,6 +61,8 @@ Fallback DEV (cookies bloqueadas):
 7) Cancel OK y refresca lista (idempotente si ya estaba cancelada).
 8) Deep link: abrir /atlas/?service=focus&date=YYYY-MM-DD y precarga servicio+fecha.
 9) Presets: Hoy / Manana / Prox. 7 dias actualizan fecha y URL sin recargar.
+10) Reprogramar: en Mis reservas, click "Reprogramar" -> elegir nuevo slot -> confirmar reprogramacion.
+11) Reprogramar: reserva original queda cancelada y la nueva aparece en la lista.
 
 Nota: si los endpoints de servicios/disponibilidad/reservas no existen, la UI muestra "Not available yet" sin romper.
 
