@@ -9,46 +9,49 @@
     <div id="app" class="app">
       <header class="hero">
         <div class="badge">ATLAS</div>
-        <h1>Connection Monitor</h1>
-        <p class="subtitle">Healthy signal, calm interface, no console noise.</p>
+        <h1>Atlas</h1>
+        <p class="subtitle">Reserva y gestiona tu agenda en calma.</p>
       </header>
-      <section class="panel" id="auth-panel" data-panel-auth aria-busy="false">
-        <div class="panel-title">Auth</div>
-        <div class="auth-grid">
-          <div class="card">
-            <div class="label">Email</div>
-            <div class="auth-row">
-              <input class="field" type="email" placeholder="demo@atlas.local" data-auth-email />
-              <button class="button" type="button" data-auth-request>Enviar link</button>
-            </div>
-            <div class="note" data-auth-message aria-live="polite">--</div>
-          </div>
-          <div class="card">
-            <div class="label">Sesion</div>
-            <div class="value" data-auth-status>Offline</div>
-            <div class="note" data-auth-user aria-live="polite">--</div>
-            <div class="button-row">
-              <button class="button ghost" type="button" data-auth-refresh>Refrescar</button>
-              <button class="button ghost" type="button" data-auth-logout>Logout</button>
-            </div>
-          </div>
-          <div class="card">
-            <div class="label">Instrucciones</div>
-            <div class="note" data-auth-helper aria-live="polite">Usa tu email para recibir un link.</div>
-            <div class="devlink" data-auth-devlink hidden>
-              <div class="auth-row devlink-row">
-                <input class="field" type="text" data-auth-devlink-input readonly />
-                <button class="button ghost" type="button" data-auth-devlink-copy>Copiar</button>
-                <button class="button" type="button" data-auth-devlink-open>Abrir</button>
+      <section class="panel" id="booking-panel" data-panel-booking aria-busy="false">
+        <div class="panel-title">Reservar</div>
+        <p class="panel-copy">Sigue el flujo en tres pasos y confirma tu horario.</p>
+        <div class="subsection" id="auth-panel" data-panel-auth aria-busy="false">
+          <div class="subsection-title">Acceso</div>
+          <div class="auth-grid">
+            <div class="card">
+              <div class="label">Email</div>
+              <div class="auth-row">
+                <input class="field" type="email" placeholder="demo@atlas.local" data-auth-email />
+                <button class="button" type="button" data-auth-request>Enviar link</button>
               </div>
-              <div class="note" data-auth-helper-extra aria-live="polite">Si el correo no llega, usa este acceso (DEV).</div>
+              <div class="note" data-auth-message aria-live="polite">--</div>
+            </div>
+            <div class="card">
+              <div class="label">Sesion</div>
+              <div class="value" data-auth-status>Sesion cerrada</div>
+              <div class="note" data-auth-user aria-live="polite">--</div>
+              <div class="button-row">
+                <button class="button ghost" type="button" data-auth-refresh>Actualizar</button>
+                <button class="button ghost" type="button" data-auth-logout>Cerrar sesion</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="label">Instrucciones</div>
+              <div class="note" data-auth-helper aria-live="polite">Usa tu email para recibir un link.</div>
+              <div class="devlink" data-auth-devlink hidden>
+                <div class="auth-row devlink-row">
+                  <input class="field" type="text" data-auth-devlink-input readonly />
+                  <button class="button ghost" type="button" data-auth-devlink-copy>Copiar</button>
+                  <button class="button" type="button" data-auth-devlink-open>Abrir</button>
+                </div>
+                <div class="note" data-auth-helper-extra aria-live="polite">Si el correo no llega, usa este acceso (DEV).</div>
+              </div>
             </div>
           </div>
         </div>
-      </section>
-      <section class="panel" id="booking-panel" data-panel-booking aria-busy="false">
-        <div class="panel-title">Reservar</div>
-        <div class="booking-grid">
+        <div class="subsection">
+          <div class="subsection-title">Tu horario</div>
+          <div class="booking-grid">
           <div class="card">
             <div class="label">Paso 1: Servicio</div>
             <div class="note" data-services-state aria-live="polite">Cargando...</div>
@@ -77,10 +80,12 @@
             <div class="note" data-booking-message aria-live="polite">--</div>
             <div class="note" data-booking-confirmation aria-live="polite">--</div>
           </div>
+          </div>
         </div>
       </section>
       <section class="panel" id="bookings-panel" data-panel-bookings aria-busy="false">
         <div class="panel-title">Mis reservas</div>
+        <p class="panel-copy">Consulta tus reservas activas y tu historial en un vistazo.</p>
         <div class="note" data-bookings-state aria-live="polite">Cargando...</div>
         <div class="note" data-bookings-cta aria-live="polite">--</div>
         <div class="subsection-title">Activas</div>
@@ -93,8 +98,15 @@
         <button class="button ghost" type="button" data-bookings-retry disabled>Reintentar</button>
       </section>
       <section class="panel" id="admin-panel" data-panel-admin aria-busy="false">
-        <div class="panel-title">Admin</div>
-        <div class="admin-grid">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Modo admin</div>
+            <p class="panel-copy" data-admin-mode-note>Solo para administracion.</p>
+          </div>
+          <button class="button ghost" type="button" data-admin-mode-toggle>Activar modo admin</button>
+        </div>
+        <div class="admin-body" data-admin-body hidden>
+          <div class="admin-grid">
           <div class="card">
             <div class="label">Acceso</div>
             <div class="note" data-admin-status aria-live="polite">Acceso restringido.</div>
@@ -135,11 +147,13 @@
             </div>
             <button class="button ghost" type="button" data-admin-services-retry disabled>Reintentar</button>
           </div>
+          </div>
         </div>
       </section>
       <details class="panel system-panel" data-panel-health aria-busy="false">
         <summary class="system-summary">Estado del sistema</summary>
         <div class="system-body">
+          <p class="panel-copy">Diagnostico tecnico para soporte y QA.</p>
           <div class="status">
             <span class="dot" data-dot></span>
             <span data-state aria-live="polite">Loading</span>
