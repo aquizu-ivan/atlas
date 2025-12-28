@@ -24,6 +24,7 @@ const authRedirectBaseUrl = normalizeBaseUrl(rawRedirectBaseUrl || defaultRedire
 const parsedSessionDays = Number.parseInt(process.env.AUTH_SESSION_TTL_DAYS ?? "", 10);
 const authSessionTtlDays = Number.isFinite(parsedSessionDays) && parsedSessionDays > 0 ? parsedSessionDays : 7;
 const corsOrigin = process.env.CORS_ORIGIN || "";
+const adminAccessToken = process.env.ADMIN_ACCESS_TOKEN || "";
 const startedAt = new Date().toISOString();
 
 export const env = {
@@ -38,5 +39,6 @@ export const env = {
   authRedirectBaseUrl,
   authSessionTtlDays,
   corsOrigin,
+  adminAccessToken,
   startedAt,
 };

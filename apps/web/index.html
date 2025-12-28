@@ -110,6 +110,32 @@
         <div class="booking-list" data-bookings-list></div>
         <button class="button ghost" type="button" data-bookings-retry disabled>Reintentar</button>
       </section>
+      <section class="panel" id="admin-panel">
+        <div class="panel-title">Admin</div>
+        <div class="admin-grid">
+          <div class="card">
+            <div class="label">Acceso</div>
+            <div class="note" data-admin-status>Acceso restringido.</div>
+            <div class="auth-row">
+              <input class="field" type="password" placeholder="Token admin" data-admin-token />
+              <button class="button" type="button" data-admin-connect>Conectar</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="label">Agenda</div>
+            <input class="field" type="date" data-admin-date aria-label="Fecha agenda" />
+            <div class="note" data-admin-agenda-state>--</div>
+            <div class="booking-list" data-admin-agenda-list></div>
+            <button class="button ghost" type="button" data-admin-agenda-retry disabled>Reintentar</button>
+          </div>
+          <div class="card">
+            <div class="label">Usuarios</div>
+            <div class="note" data-admin-users-state>--</div>
+            <div class="booking-list" data-admin-users-list></div>
+            <button class="button ghost" type="button" data-admin-users-retry disabled>Reintentar</button>
+          </div>
+        </div>
+      </section>
       <footer class="footer">
         <span>Health URL: <strong data-api>--</strong></span>
       </footer>

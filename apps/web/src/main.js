@@ -43,6 +43,16 @@ const bookingsStateEl = document.querySelector("[data-bookings-state]");
 const bookingsCtaEl = document.querySelector("[data-bookings-cta]");
 const bookingsListEl = document.querySelector("[data-bookings-list]");
 const bookingsRetryBtn = document.querySelector("[data-bookings-retry]");
+const adminStatusEl = document.querySelector("[data-admin-status]");
+const adminTokenInput = document.querySelector("[data-admin-token]");
+const adminConnectBtn = document.querySelector("[data-admin-connect]");
+const adminDateInput = document.querySelector("[data-admin-date]");
+const adminAgendaStateEl = document.querySelector("[data-admin-agenda-state]");
+const adminAgendaListEl = document.querySelector("[data-admin-agenda-list]");
+const adminAgendaRetryBtn = document.querySelector("[data-admin-agenda-retry]");
+const adminUsersStateEl = document.querySelector("[data-admin-users-state]");
+const adminUsersListEl = document.querySelector("[data-admin-users-list]");
+const adminUsersRetryBtn = document.querySelector("[data-admin-users-retry]");
 function normalizeBase(value) {
   if (!value) return "";
   return value.trim().replace(/\/+$/, "");
@@ -99,6 +109,7 @@ const healthUrl = `${apiOrigin}/api/health`;
 const authBaseUrl = `${apiOrigin}/api/auth`;
 const apiBaseUrl = `${apiOrigin}/api`;
 const devTokenStorageKey = "atlas_dev_token";
+const adminTokenStorageKey = "atlas_admin_token";
 
 apiEl.textContent = healthUrl;
 
@@ -219,6 +230,59 @@ function setConfirmLabel() {
   bookingConfirmBtn.textContent = rescheduleContext ? "Confirmar reprogramacion" : "Confirmar reserva";
 }
 
+function setAdminStatus(message) {
+  if (adminStatusEl) {
+    adminStatusEl.textContent = message;
+  }
+}
+
+function setAdminAgendaState(message) {
+  if (adminAgendaStateEl) {
+    adminAgendaStateEl.textContent = message;
+  }
+}
+
+function setAdminUsersState(message) {
+  if (adminUsersStateEl) {
+    adminUsersStateEl.textContent = message;
+  }
+}
+
+function getStoredAdminToken() {
+  try {
+    return sessionStorage.getItem(adminTokenStorageKey) || "";
+  } catch {
+    return "";
+  }
+}
+
+function setStoredAdminToken(token) {
+  try {
+    if (!token) {
+      sessionStorage.removeItem(adminTokenStorageKey);
+      return;
+    }
+    sessionStorage.setItem(adminTokenStorageKey, token);
+  } catch {
+    // Ignore storage errors.
+  }
+}
+
+function adminFetch(url, options = {}) {
+  const token = getStoredAdminToken();
+  if (!token) {
+    return Promise.reject(new Error("Admin token missing"));
+  }
+  const headers = {
+    ...(options.headers || {}),
+    Authorization: `Bearer ${token}`,
+  };
+  return fetch(url, {
+    ...options,
+    headers,
+  });
+}
+
 function getStoredDevToken() {
   try {
     return sessionStorage.getItem(devTokenStorageKey) || "";
@@ -309,6 +373,14 @@ function formatSlotLabel(iso) {
     return trimmed.replace("T", " ").slice(0, 16);
   }
   return trimmed;
+}
+
+function formatDateCompact(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "--";
+  }
+  return date.toISOString().replace("T", " ").slice(0, 16);
 }
 
 function parseServicesPayload(data) {
@@ -1067,6 +1139,120 @@ async function cancelBooking(bookingId) {
   }
 }
 
+async function loadAdminAgenda() {
+  adminAgendaListEl.innerHTML = "";
+  toggleRetry(adminAgendaRetryBtn, false);
+  if (!getStoredAdminToken()) {
+    setAdminAgendaState("Acceso restringido.");
+    return;
+  }
+  const date = adminDateInput.value;
+  if (!isValidDateString(date)) {
+    setAdminAgendaState("Fecha invalida");
+    return;
+  }
+  setAdminAgendaState("Cargando...");
+  try {
+    const response = await adminFetch(`${apiBaseUrl}/admin/agenda?date=${date}`);
+    const data = await response.json().catch(() => null);
+    if (response.status === 401) {
+      setStoredAdminToken("");
+      setAdminStatus("Acceso restringido.");
+      setAdminAgendaState("Acceso restringido.");
+      toggleRetry(adminAgendaRetryBtn, true);
+      return;
+    }
+    if (!response.ok || !data || !data.ok) {
+      setAdminAgendaState("No se pudo conectar");
+      toggleRetry(adminAgendaRetryBtn, true);
+      return;
+    }
+    const bookings = data?.data?.bookings || [];
+    if (!Array.isArray(bookings) || bookings.length === 0) {
+      setAdminAgendaState("Sin reservas");
+      return;
+    }
+    setAdminAgendaState("Listo");
+    for (const booking of bookings) {
+      const item = document.createElement("div");
+      item.className = "booking-item";
+      const title = document.createElement("div");
+      title.className = "value";
+      title.textContent = formatDateCompact(booking.startAt);
+      const meta = document.createElement("div");
+      meta.className = "booking-meta";
+      const serviceName = booking.service?.name ? ` - ${booking.service.name}` : "";
+      const userEmail = booking.user?.email ? ` - ${booking.user.email}` : "";
+      meta.textContent = `${formatStatus(booking.status)}${serviceName}${userEmail}`;
+      item.append(title, meta);
+      adminAgendaListEl.append(item);
+    }
+  } catch {
+    setAdminAgendaState("No se pudo conectar");
+    toggleRetry(adminAgendaRetryBtn, true);
+  }
+}
+
+async function loadAdminUsers() {
+  adminUsersListEl.innerHTML = "";
+  toggleRetry(adminUsersRetryBtn, false);
+  if (!getStoredAdminToken()) {
+    setAdminUsersState("Acceso restringido.");
+    return;
+  }
+  setAdminUsersState("Cargando...");
+  try {
+    const response = await adminFetch(`${apiBaseUrl}/admin/users`);
+    const data = await response.json().catch(() => null);
+    if (response.status === 401) {
+      setStoredAdminToken("");
+      setAdminStatus("Acceso restringido.");
+      setAdminUsersState("Acceso restringido.");
+      toggleRetry(adminUsersRetryBtn, true);
+      return;
+    }
+    if (!response.ok || !data || !data.ok) {
+      setAdminUsersState("No se pudo conectar");
+      toggleRetry(adminUsersRetryBtn, true);
+      return;
+    }
+    const users = data?.data?.users || [];
+    if (!Array.isArray(users) || users.length === 0) {
+      setAdminUsersState("Sin usuarios");
+      return;
+    }
+    setAdminUsersState("Listo");
+    for (const user of users) {
+      const item = document.createElement("div");
+      item.className = "booking-item";
+      const title = document.createElement("div");
+      title.className = "value";
+      title.textContent = user.email || "--";
+      const meta = document.createElement("div");
+      meta.className = "booking-meta";
+      meta.textContent = formatDateCompact(user.createdAt);
+      item.append(title, meta);
+      adminUsersListEl.append(item);
+    }
+  } catch {
+    setAdminUsersState("No se pudo conectar");
+    toggleRetry(adminUsersRetryBtn, true);
+  }
+}
+
+function connectAdmin() {
+  const token = (adminTokenInput.value || "").trim();
+  if (!token) {
+    setAdminStatus("Acceso restringido.");
+    return;
+  }
+  setStoredAdminToken(token);
+  adminTokenInput.value = "";
+  setAdminStatus("Conectado.");
+  loadAdminAgenda();
+  loadAdminUsers();
+}
+
 authRequestBtn.addEventListener("click", requestLink);
 authDevLinkCopyBtn.addEventListener("click", copyDevLink);
 authDevLinkOpenBtn.addEventListener("click", openDevLink);
@@ -1079,6 +1265,9 @@ dateWeekBtn.addEventListener("click", () => applyDatePreset(7));
 servicesRetryBtn.addEventListener("click", loadServices);
 availabilityRetryBtn.addEventListener("click", loadAvailability);
 bookingsRetryBtn.addEventListener("click", loadBookings);
+adminConnectBtn.addEventListener("click", connectAdmin);
+adminAgendaRetryBtn.addEventListener("click", loadAdminAgenda);
+adminUsersRetryBtn.addEventListener("click", loadAdminUsers);
 servicesSelectEl.addEventListener("change", (event) => {
   if (rescheduleContext) {
     setBookingMessage("Elige un nuevo horario para reprogramar.");
@@ -1172,3 +1361,18 @@ if (authHash === "success" || authQuery === "success" || (!authHash && !authQuer
 }
 loadServices();
 loadBookings();
+
+const todayValue = formatDateInput(new Date());
+if (adminDateInput) {
+  adminDateInput.value = todayValue;
+  adminDateInput.addEventListener("change", loadAdminAgenda);
+}
+if (getStoredAdminToken()) {
+  setAdminStatus("Conectado.");
+  loadAdminAgenda();
+  loadAdminUsers();
+} else {
+  setAdminStatus("Acceso restringido.");
+  setAdminAgendaState("Acceso restringido.");
+  setAdminUsersState("Acceso restringido.");
+}
