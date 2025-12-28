@@ -70,14 +70,19 @@
               <button class="button ghost preset-button" type="button" data-date-week>Prox. 7 dias</button>
             </div>
             <div class="note" data-availability-state aria-live="polite">Selecciona servicio y fecha</div>
-            <div class="slots" data-availability-slots></div>
+            <div class="slots slots-scroll" data-availability-slots></div>
             <button class="button ghost" type="button" data-availability-retry disabled>Reintentar</button>
           </div>
           <div class="card">
             <div class="label">Paso 3: Confirmar</div>
-            <div class="note" data-booking-summary aria-live="polite">Selecciona un horario</div>
-            <button class="button" type="button" data-booking-confirm disabled>Confirmar reserva</button>
-            <div class="note" data-booking-message aria-live="polite">--</div>
+            <div class="confirm-box">
+              <div class="note">Resumen</div>
+              <div class="note" data-booking-summary aria-live="polite">Selecciona un horario</div>
+              <div class="note" data-booking-message aria-live="polite">--</div>
+            </div>
+            <div class="confirm-actions">
+              <button class="button" type="button" data-booking-confirm disabled>Confirmar reserva</button>
+            </div>
             <div class="note" data-booking-confirmation aria-live="polite">--</div>
           </div>
           </div>
@@ -106,47 +111,53 @@
           <button class="button ghost" type="button" data-admin-mode-toggle>Activar modo admin</button>
         </div>
         <div class="admin-body" data-admin-body hidden>
-          <div class="admin-grid">
-          <div class="card">
-            <div class="label">Acceso</div>
+          <div class="admin-access card">
+            <div class="label">Acceso admin</div>
             <div class="note" data-admin-status aria-live="polite">Acceso restringido.</div>
+            <div class="note" data-admin-access-note aria-live="polite">Solo para administracion.</div>
             <div class="auth-row">
               <input class="field" type="password" placeholder="Token admin" data-admin-token />
               <button class="button" type="button" data-admin-connect>Conectar</button>
             </div>
           </div>
-          <div class="card">
-            <div class="label">Agenda</div>
-            <input class="field" type="date" data-admin-date aria-label="Fecha agenda" />
-            <div class="note" data-admin-agenda-state aria-live="polite">--</div>
-            <div class="booking-list" data-admin-agenda-list></div>
-            <button class="button ghost" type="button" data-admin-agenda-retry disabled>Reintentar</button>
-          </div>
-          <div class="card">
-            <div class="label">Usuarios</div>
-            <div class="note" data-admin-users-state aria-live="polite">--</div>
-            <div class="booking-list" data-admin-users-list></div>
-            <button class="button ghost" type="button" data-admin-users-retry disabled>Reintentar</button>
-          </div>
-          <div class="card">
-            <div class="label">Servicios</div>
-            <div class="note" data-admin-services-state aria-live="polite">--</div>
-            <div class="booking-list" data-admin-services-list></div>
-            <div class="admin-form">
-              <input class="field" type="text" placeholder="Nombre del servicio" data-admin-service-name />
-              <input class="field" type="number" min="10" max="240" placeholder="Duracion (min)" data-admin-service-duration />
-              <label class="note admin-toggle">
-                <input type="checkbox" data-admin-service-active checked />
-                Activo
-              </label>
-              <div class="button-row">
-                <button class="button" type="button" data-admin-service-save>Guardar</button>
-                <button class="button ghost" type="button" data-admin-service-reset>Limpiar</button>
+          <div class="admin-panels" data-admin-panels hidden>
+            <div class="admin-grid">
+              <div class="card">
+                <div class="label">Agenda</div>
+                <div class="note">Vista diaria de reservas.</div>
+                <input class="field" type="date" data-admin-date aria-label="Fecha agenda" />
+                <div class="note" data-admin-agenda-state aria-live="polite">--</div>
+                <div class="booking-list" data-admin-agenda-list></div>
+                <button class="button ghost" type="button" data-admin-agenda-retry disabled>Reintentar</button>
               </div>
-              <div class="note" data-admin-services-message aria-live="polite">--</div>
+              <div class="card">
+                <div class="label">Usuarios</div>
+                <div class="note">Listado de usuarios activos.</div>
+                <div class="note" data-admin-users-state aria-live="polite">--</div>
+                <div class="booking-list" data-admin-users-list></div>
+                <button class="button ghost" type="button" data-admin-users-retry disabled>Reintentar</button>
+              </div>
+              <div class="card">
+                <div class="label">Servicios</div>
+                <div class="note">Crea y ajusta servicios.</div>
+                <div class="note" data-admin-services-state aria-live="polite">--</div>
+                <div class="booking-list" data-admin-services-list></div>
+                <div class="admin-form">
+                  <input class="field" type="text" placeholder="Nombre del servicio" data-admin-service-name />
+                  <input class="field" type="number" min="10" max="240" placeholder="Duracion (min)" data-admin-service-duration />
+                  <label class="note admin-toggle">
+                    <input type="checkbox" data-admin-service-active checked />
+                    Activo
+                  </label>
+                  <div class="button-row">
+                    <button class="button" type="button" data-admin-service-save>Guardar</button>
+                    <button class="button ghost" type="button" data-admin-service-reset>Limpiar</button>
+                  </div>
+                  <div class="note" data-admin-services-message aria-live="polite">--</div>
+                </div>
+                <button class="button ghost" type="button" data-admin-services-retry disabled>Reintentar</button>
+              </div>
             </div>
-            <button class="button ghost" type="button" data-admin-services-retry disabled>Reintentar</button>
-          </div>
           </div>
         </div>
       </section>
