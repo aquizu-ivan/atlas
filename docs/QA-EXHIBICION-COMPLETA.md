@@ -64,6 +64,13 @@ Fallback DEV (cookies bloqueadas):
 10) Reprogramar: en Mis reservas, click "Reprogramar" -> elegir nuevo slot -> confirmar reprogramacion.
 11) Reprogramar: reserva original queda cancelada y la nueva aparece en la lista.
 
+## Admin (Read-only)
+1) Abrir Admin y ver "Acceso restringido".
+2) Ingresar ADMIN_ACCESS_TOKEN y "Conectar" -> estado "Conectado".
+3) Agenda: seleccionar fecha -> lista ordenada por hora.
+4) Usuarios: lista read-only con email y createdAt.
+5) Token invalido -> 401 y vuelve a "Acceso restringido".
+
 Nota: si los endpoints de servicios/disponibilidad/reservas no existen, la UI muestra "Not available yet" sin romper.
 
 Mensajes esperados:

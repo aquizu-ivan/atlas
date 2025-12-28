@@ -121,6 +121,12 @@ h1 {
   gap: 16px;
 }
 
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
 .card {
   background: rgba(12, 16, 28, 0.7);
   border: 1px solid #20283a;
