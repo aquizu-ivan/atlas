@@ -1545,33 +1545,52 @@ async function loadAdminAgenda() {
     setAdminAgendaState("");
     for (const booking of bookings) {
       const item = document.createElement("div");
-      item.className = "booking-item";
+      item.className = "booking-item admin-item";
+
+      const top = document.createElement("div");
+      top.className = "admin-item-top";
+
       const title = document.createElement("div");
-      title.className = "value";
-      title.textContent = formatDateCompact(booking.startAt);
-      const meta = document.createElement("div");
-      meta.className = "booking-meta";
-      const serviceName = booking.service?.name ? ` - ${booking.service.name}` : "";
-      const userEmail = booking.user?.email ? ` - ${booking.user.email}` : "";
-      meta.textContent = `${formatStatus(booking.status)}${serviceName}${userEmail}`;
+      title.className = "admin-item-title";
+
+      const main = document.createElement("span");
+      main.className = "admin-item-main";
+      const serviceLabel = booking.service?.name ? booking.service.name : "Servicio";
+      main.textContent = `${formatDateCompact(booking.startAt)} — ${serviceLabel}`;
+
+      const statusKey = normalizeKey(booking.status || "");
+      const statusPill = document.createElement("span");
+      statusPill.className = statusKey ? `pill pill-${statusKey}` : "pill";
+      statusPill.textContent = formatStatus(booking.status);
+
+      title.append(main, statusPill);
+
       const actions = document.createElement("div");
-      actions.className = "booking-actions";
+      actions.className = "admin-item-actions";
       if (booking.status === "PENDING") {
         const confirmBtn = document.createElement("button");
         confirmBtn.type = "button";
-        confirmBtn.className = "button ghost";
+        confirmBtn.className = "button ghost compact";
         confirmBtn.textContent = "Confirmar";
         confirmBtn.addEventListener("click", () => adminUpdateBooking(booking.id, "confirm"));
         actions.append(confirmBtn);
       } else if (booking.status === "CONFIRMED") {
         const cancelBtn = document.createElement("button");
         cancelBtn.type = "button";
-        cancelBtn.className = "button ghost";
+        cancelBtn.className = "button ghost compact";
         cancelBtn.textContent = "Cancelar";
         cancelBtn.addEventListener("click", () => adminUpdateBooking(booking.id, "cancel"));
         actions.append(cancelBtn);
       }
-      item.append(title, meta, actions);
+
+      top.append(title, actions);
+
+      const meta = document.createElement("div");
+      meta.className = "admin-item-meta";
+      const userEmail = booking.user?.email || "--";
+      meta.textContent = `Usuario: ${userEmail}`;
+
+      item.append(top, meta);
       adminAgendaListEl.append(item);
     }
   } catch {
@@ -1634,12 +1653,12 @@ async function loadAdminUsers() {
     setAdminUsersState("");
     for (const user of users) {
       const item = document.createElement("div");
-      item.className = "booking-item";
+      item.className = "booking-item admin-item admin-item-muted";
       const title = document.createElement("div");
       title.className = "value";
       title.textContent = user.email || "--";
       const meta = document.createElement("div");
-      meta.className = "booking-meta";
+      meta.className = "admin-item-meta";
       meta.textContent = `Alta: ${formatDateOnly(user.createdAt)}`;
       item.append(title, meta);
       adminUsersListEl.append(item);
@@ -1743,30 +1762,30 @@ async function loadAdminServices() {
     setAdminServicesState("");
     for (const service of services) {
       const item = document.createElement("div");
-      item.className = "booking-item";
+      item.className = "booking-item admin-item";
 
       const title = document.createElement("div");
       title.className = "value";
       title.textContent = service.name || "--";
 
       const meta = document.createElement("div");
-      meta.className = "booking-meta";
+      meta.className = "admin-item-meta";
       const statusLabel = service.isActive ? "Activo" : "Inactivo";
       meta.textContent = `${service.durationMin} min - ${statusLabel}`;
 
       const actions = document.createElement("div");
-      actions.className = "booking-actions";
+      actions.className = "admin-item-actions";
 
       const editBtn = document.createElement("button");
       editBtn.type = "button";
-      editBtn.className = "button ghost";
+      editBtn.className = "button ghost compact";
       editBtn.textContent = "Editar";
       editBtn.addEventListener("click", () => startAdminServiceEdit(service));
       actions.append(editBtn);
 
       const toggleBtn = document.createElement("button");
       toggleBtn.type = "button";
-      toggleBtn.className = "button ghost";
+      toggleBtn.className = "button ghost compact";
       toggleBtn.textContent = service.isActive ? "Desactivar" : "Activar";
       toggleBtn.addEventListener("click", async () => {
         toggleBtn.disabled = true;
