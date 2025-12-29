@@ -198,3 +198,11 @@ Checklist limpieza de ruido:
 2) Loading/empty/error/success son humanos y calmados.
 3) 401/409 no muestran jerga tecnica.
 4) Hints solo aparecen cuando faltan datos.
+
+## TICKET-39 - Admin instrumento
+1) Admin no se siente largo; cada subpanel es compacto.
+2) Agenda legible en 10 segundos (linea fuerte + detalle tenue).
+3) Acciones confirmar/cancelar claras y no invasivas.
+4) Servicios: crear/editar/activar funciona sin estirar el panel.
+5) Usuarios compacto, fechas en formato dd/mm/aaaa.
+6) Zoom 100% / 125% / 150% sin solapes en Admin.

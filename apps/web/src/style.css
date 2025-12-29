@@ -114,7 +114,7 @@ h1 {
 
 .admin-panels {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 #booking-panel .panel-title {
@@ -226,16 +226,21 @@ h1 {
 
 .admin-form {
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 6px 10px;
+}
+
+.admin-form-span {
+  grid-column: 1 / -1;
 }
 
 .admin-section {
   border: 1px solid #20283a;
   border-radius: 16px;
-  padding: 10px;
+  padding: 8px;
   background: rgba(9, 13, 22, 0.35);
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .admin-summary {
@@ -256,8 +261,8 @@ h1 {
 }
 
 .admin-card {
-  margin-top: 8px;
-  padding: calc(var(--card-pad) - 2px);
+  margin-top: 6px;
+  padding: calc(var(--card-pad) - 6px);
   min-height: auto;
 }
 
@@ -513,6 +518,12 @@ h1 {
   font-size: 13px;
 }
 
+.button.compact {
+  height: calc(var(--control-h) - 6px);
+  padding: 0 10px;
+  font-size: 12px;
+}
+
 .admin-body .button.ghost {
   border-color: #2a3549;
 }
@@ -703,26 +714,100 @@ h1 {
   gap: 12px;
 }
 
-[data-admin-agenda-list],
-[data-admin-users-list],
-[data-admin-services-list] {
-  max-height: 260px;
+.admin-list {
+  max-height: 240px;
   overflow: auto;
   padding-right: 4px;
   scrollbar-gutter: stable;
+  gap: 8px;
 }
 
-[data-admin-agenda-list]::-webkit-scrollbar,
-[data-admin-users-list]::-webkit-scrollbar,
-[data-admin-services-list]::-webkit-scrollbar {
+.admin-list--primary {
+  max-height: 320px;
+}
+
+.admin-list--tertiary {
+  max-height: 220px;
+}
+
+.admin-list::-webkit-scrollbar {
   width: 8px;
 }
 
-[data-admin-agenda-list]::-webkit-scrollbar-thumb,
-[data-admin-users-list]::-webkit-scrollbar-thumb,
-[data-admin-services-list]::-webkit-scrollbar-thumb {
+.admin-list::-webkit-scrollbar-thumb {
   background: rgba(111, 214, 255, 0.14);
   border-radius: 999px;
+}
+
+.admin-item {
+  gap: 6px;
+  padding: 6px 10px;
+}
+
+.admin-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-item-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-weight: 600;
+}
+
+.admin-item-main {
+  color: #dbe4f2;
+}
+
+.admin-item-meta {
+  color: #9aa8bc;
+  font-size: 12px;
+}
+
+.admin-item-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.admin-item-muted {
+  background: rgba(9, 13, 22, 0.5);
+  border-color: rgba(33, 42, 60, 0.7);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(110, 123, 146, 0.4);
+  background: rgba(110, 123, 146, 0.12);
+  color: #c7d3e6;
+}
+
+.pill-pending {
+  border-color: rgba(255, 195, 92, 0.35);
+  background: rgba(255, 195, 92, 0.12);
+  color: #f2d6a7;
+}
+
+.pill-confirmed {
+  border-color: rgba(84, 224, 170, 0.35);
+  background: rgba(84, 224, 170, 0.12);
+  color: #c8f1e0;
+}
+
+.pill-canceled {
+  border-color: rgba(141, 154, 178, 0.35);
+  background: rgba(141, 154, 178, 0.12);
+  color: #c2cad6;
 }
 
 .booking-item {
