@@ -221,3 +221,54 @@ Checklist limpieza de ruido:
 5) Screen reader basico: labels presentes.
 6) Zoom 100% / 125% / 150% sin solapes.
 7) Reduced motion verificado.
+
+## Tickets (orden canonico)
+- TICKET-00: Repo habitable + tooling smoke
+- TICKET-01: Contrato humano + dominio (docs)
+- TICKET-02: DB shape (Prisma)
+- TICKET-03: Health observable
+- TICKET-04: Contrato de errores
+- TICKET-05: Concurrencia demo
+- TICKET-06: Request link
+- TICKET-07: Consume + sesion
+- TICKET-08: Booking con sesion
+- TICKET-09: Auth hardening (cors + cookie + logout)
+- TICKET-10: Prisma tooling smoke
+- TICKET-11: Setup Neon
+- TICKET-12: Pages deploy + contrato front
+- TICKET-13: Railway deploy corepack + scripts
+- TICKET-14: Auth web + cookies prod
+- TICKET-15: Actions split pages
+- TICKET-16: QA exhibicion script
+- TICKET-17: Web booking flow
+- TICKET-18: Services + availability
+- TICKET-19: No documentado aqui
+- TICKET-20: Web e2e loop
+- TICKET-21: DevLink visible
+- TICKET-22: Cookies cross-site
+- TICKET-23: Dev token fallback
+- TICKET-24: Booking 404 hotfix
+- TICKET-25: Deep links + presets
+- TICKET-26: Reprogramar
+- TICKET-27: Admin read-only
+- TICKET-28: Admin servicios
+- TICKET-29: Pulido UX final
+- TICKET-30: Ciclo booking confirmado/cancelado
+- TICKET-31: Experiencia final usuario
+- TICKET-32: No documentado aqui
+- TICKET-33: IAQUIZU identity pass
+- TICKET-34: Premium final
+- TICKET-35: No documentado aqui
+- TICKET-36: No documentado aqui
+- TICKET-37: No documentado aqui
+- TICKET-38: Copy + estados silenciosos
+- TICKET-39: Admin instrumento
+- TICKET-40: Layout tokens
+- TICKET-41: Responsive + a11y final
+
+## Checklist de exhibicion v1
+- Build OK
+- QA script OK
+- Demo accesible
+- Responsive + a11y OK
+- Admin operativo
