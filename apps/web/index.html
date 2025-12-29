@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,9 +19,9 @@
           <div class="subsection-title">Acceso</div>
           <div class="auth-grid">
             <div class="card">
-              <div class="label">Email</div>
+              <label class="label" for="auth-email">Email</label>
               <div class="auth-row">
-                <input class="field" type="email" placeholder="demo@atlas.local" data-auth-email />
+                <input class="field" id="auth-email" type="email" placeholder="demo@atlas.local" data-auth-email aria-label="Email" />
                 <button class="button" type="button" data-auth-request>Enviar link</button>
               </div>
               <div class="note" data-auth-message aria-live="polite">--</div>
@@ -40,7 +40,7 @@
               <div class="note" data-auth-helper aria-live="polite">Usa tu email para recibir un link.</div>
               <div class="devlink" data-auth-devlink hidden>
                 <div class="auth-row devlink-row">
-                  <input class="field" type="text" data-auth-devlink-input readonly />
+                  <input class="field" type="text" data-auth-devlink-input aria-label="Link de acceso DEV" readonly />
                   <button class="button ghost" type="button" data-auth-devlink-copy>Copiar</button>
                   <button class="button" type="button" data-auth-devlink-open>Abrir</button>
                 </div>
@@ -53,7 +53,7 @@
           <div class="subsection-title">Tu horario</div>
           <div class="booking-grid">
           <div class="card service-card" data-services-card data-has-selection="false">
-            <div class="label">Paso 1: Servicio</div>
+            <label class="label" for="service-select">Paso 1: Servicio</label>
             <div class="note" data-services-state aria-live="polite">Cargando...</div>
             <div class="summary-card summary-card--compact" data-services-summary hidden>
               <div class="summary-title">Servicio seleccionado</div>
@@ -62,22 +62,22 @@
                 <span data-services-summary-duration>Duracion: —</span>
               </div>
             </div>
-            <select class="field" data-services-select aria-label="Selecciona un servicio" disabled>
+            <select class="field" id="service-select" data-services-select aria-label="Selecciona un servicio" disabled>
               <option value="">Selecciona un servicio</option>
             </select>
             <div class="note hint" data-services-hint aria-live="polite">Elegi un servicio para ver horarios.</div>
             <button class="button ghost" type="button" data-services-retry disabled>Reintentar</button>
           </div>
           <div class="card">
-            <div class="label">Paso 2: Fecha</div>
-            <input class="field" type="date" data-booking-date aria-label="Selecciona una fecha" disabled />
+            <label class="label" for="booking-date">Paso 2: Fecha</label>
+            <input class="field" id="booking-date" type="date" data-booking-date aria-label="Selecciona una fecha" disabled />
             <div class="preset-row">
               <button class="button ghost preset-button" type="button" data-date-today>Hoy</button>
               <button class="button ghost preset-button" type="button" data-date-tomorrow>Manana</button>
               <button class="button ghost preset-button" type="button" data-date-week>Prox. 7 dias</button>
             </div>
             <div class="note" data-availability-state aria-live="polite">Selecciona servicio y fecha</div>
-            <div class="slots slots-scroll" data-availability-slots></div>
+            <div class="slots slots-scroll" data-availability-slots role="list"></div>
             <button class="button ghost" type="button" data-availability-retry disabled>Reintentar</button>
           </div>
           <div class="card">
@@ -116,7 +116,7 @@
           <div class="accordion-body">
             <div class="note" data-bookings-state aria-live="polite">Cargando...</div>
             <div class="note" data-bookings-cta aria-live="polite"></div>
-            <div class="booking-list" data-bookings-active-list></div>
+            <div class="booking-list" data-bookings-active-list role="list"></div>
             <button class="button ghost" type="button" data-bookings-retry disabled>Reintentar</button>
           </div>
         </details>
@@ -124,7 +124,7 @@
           <summary class="history-summary accordion-summary" data-bookings-history-summary>Historial (0)</summary>
           <div class="accordion-body">
             <div class="note" data-bookings-history-state aria-live="polite"></div>
-            <div class="booking-list history-list" data-bookings-history-list></div>
+            <div class="booking-list history-list" data-bookings-history-list role="list"></div>
           </div>
         </details>
       </section>
@@ -144,7 +144,7 @@
                 <div class="note" data-admin-status aria-live="polite">Sin acceso.</div>
                 <div class="note" data-admin-access-note aria-live="polite">Ingresa el token para continuar.</div>
                 <div class="auth-row">
-                  <input class="field" type="password" placeholder="Token admin" data-admin-token />
+                  <input class="field" type="password" placeholder="Token admin" data-admin-token aria-label="Token de administracion" />
                   <button class="button compact" type="button" data-admin-connect>Conectar</button>
                 </div>
               </div>
@@ -159,7 +159,7 @@
                   <div class="note admin-subcopy">Reservas del dia.</div>
                   <input class="field" type="date" data-admin-date aria-label="Fecha agenda" />
                   <div class="note" data-admin-agenda-state aria-live="polite"></div>
-                  <div class="booking-list admin-list admin-list--primary" data-admin-agenda-list></div>
+                  <div class="booking-list admin-list admin-list--primary" data-admin-agenda-list role="list"></div>
                   <button class="button ghost" type="button" data-admin-agenda-retry disabled>Reintentar</button>
                 </div>
               </div>
@@ -171,10 +171,10 @@
                   <div class="label">Servicios</div>
                   <div class="note admin-subcopy">Gestion diaria de servicios.</div>
                   <div class="note" data-admin-services-state aria-live="polite"></div>
-                  <div class="booking-list admin-list admin-list--secondary" data-admin-services-list></div>
+                  <div class="booking-list admin-list admin-list--secondary" data-admin-services-list role="list"></div>
                   <div class="admin-form">
-                    <input class="field" type="text" placeholder="Nombre del servicio" data-admin-service-name />
-                    <input class="field" type="number" min="10" max="240" placeholder="Duracion (min)" data-admin-service-duration />
+                    <input class="field" type="text" placeholder="Nombre del servicio" data-admin-service-name aria-label="Nombre del servicio" />
+                    <input class="field" type="number" min="10" max="240" placeholder="Duracion (min)" data-admin-service-duration aria-label="Duracion del servicio en minutos" />
                     <label class="note admin-toggle admin-form-span">
                       <input type="checkbox" data-admin-service-active checked />
                       Activo
@@ -196,7 +196,7 @@
                   <div class="label">Usuarios</div>
                   <div class="note admin-subcopy">Listado de cuentas.</div>
                   <div class="note" data-admin-users-state aria-live="polite"></div>
-                  <div class="booking-list admin-list admin-list--tertiary" data-admin-users-list></div>
+                  <div class="booking-list admin-list admin-list--tertiary" data-admin-users-list role="list"></div>
                   <button class="button ghost" type="button" data-admin-users-retry disabled>Reintentar</button>
                 </div>
               </div>

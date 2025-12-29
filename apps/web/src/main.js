@@ -1149,6 +1149,7 @@ async function loadAvailability() {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "button ghost slot-button";
+      button.setAttribute("role", "listitem");
       button.textContent = formatSlotLabel(startAt);
       button.addEventListener("click", () => selectSlot(startAt, button));
       availabilitySlotsEl.append(button);
@@ -1379,6 +1380,7 @@ async function loadBookings() {
     for (const booking of active) {
       const item = document.createElement("div");
       item.className = "booking-item";
+      item.setAttribute("role", "listitem");
 
       const title = document.createElement("div");
       title.className = "value";
@@ -1417,6 +1419,7 @@ async function loadBookings() {
     for (const booking of history) {
       const item = document.createElement("div");
       item.className = "booking-item";
+      item.setAttribute("role", "listitem");
 
       const title = document.createElement("div");
       title.className = "value";
@@ -1546,6 +1549,7 @@ async function loadAdminAgenda() {
     for (const booking of bookings) {
       const item = document.createElement("div");
       item.className = "booking-item admin-item";
+      item.setAttribute("role", "listitem");
 
       const top = document.createElement("div");
       top.className = "admin-item-top";
@@ -1654,6 +1658,7 @@ async function loadAdminUsers() {
     for (const user of users) {
       const item = document.createElement("div");
       item.className = "booking-item admin-item admin-item-muted";
+      item.setAttribute("role", "listitem");
       const title = document.createElement("div");
       title.className = "value";
       title.textContent = user.email || "--";
@@ -1763,6 +1768,7 @@ async function loadAdminServices() {
     for (const service of services) {
       const item = document.createElement("div");
       item.className = "booking-item admin-item";
+      item.setAttribute("role", "listitem");
 
       const title = document.createElement("div");
       title.className = "value";

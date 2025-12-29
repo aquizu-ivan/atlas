@@ -318,6 +318,7 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  min-height: var(--control-h);
   cursor: pointer;
   border-radius: var(--control-radius);
   background: rgba(9, 13, 22, 0.35);
@@ -449,6 +450,7 @@ h1 {
 
 .field {
   height: var(--control-h);
+  width: 100%;
   border-radius: var(--control-radius);
   border: 1px solid #273149;
   background: #0b0f19;
@@ -963,10 +965,24 @@ h1 {
   padding-bottom: 0;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .panel-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .auth-grid,
+  .booking-grid,
+  .admin-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .slots {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+  .confirm-actions {
+    justify-content: stretch;
   }
 }
 
@@ -999,11 +1015,67 @@ h1 {
   font-size: 13px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 480px) {
   .app {
-    padding: calc(var(--space-6) + var(--space-2)) calc(var(--space-4) + 2px) calc(var(--space-6) + var(--space-5));
+    padding: calc(var(--space-6) + var(--space-2)) var(--container-pad) calc(var(--space-6) + var(--space-5));
   }
   .panel {
     padding: calc(var(--space-4) + var(--space-1) + 2px);
+  }
+  .auth-grid,
+  .booking-grid,
+  .admin-grid,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .auth-row,
+  .button-row,
+  .preset-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .auth-row .field,
+  .auth-row .button,
+  .button-row .button,
+  .preset-row .button {
+    width: 100%;
+  }
+  .slots {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  .slots-scroll {
+    max-height: 320px;
+  }
+  .summary-row,
+  .kv {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+  .confirm-actions {
+    width: 100%;
+  }
+  .confirm-actions .button {
+    width: 100%;
+  }
+  .admin-item-top {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0ms;
+    --t: 0ms;
+    --hover-lift: 0px;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .button[data-loading="true"]::after,
+  .note[data-loading="true"]::before {
+    animation: none;
   }
 }
