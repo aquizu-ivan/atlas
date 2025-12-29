@@ -181,3 +181,8 @@ Checklist limpieza de ruido:
 2) Admin compacto con listas contenidas (scroll suave en listas largas).
 3) Focus visible consistente en todos los elementos interactivos.
 4) Zoom 100% / 125% / 150% sin solapes.
+
+## TICKET-34 - Jerarquia editorial
+1) Hero se siente mas fuerte sin gritar (IAQUIZU + ATLAS).
+2) Flujo principal se percibe primero; secundarios mas calmos.
+3) Acordeones con aire editorial; sin ruido.

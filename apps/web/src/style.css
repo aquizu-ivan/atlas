@@ -41,12 +41,13 @@ body {
   margin: 0 auto;
   padding: 56px 24px 72px;
   display: grid;
-  gap: 32px;
+  gap: 36px;
 }
 
 .hero {
   display: grid;
-  gap: 10px;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
 .badge {
@@ -63,15 +64,17 @@ body {
 h1 {
   margin: 0;
   font-size: clamp(28px, 4vw, 44px);
-  font-weight: 600;
+  font-weight: 650;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
 }
 
 .subtitle {
   margin: 0;
-  color: var(--muted);
-  max-width: 520px;
+  color: #c8d3e5;
+  max-width: 560px;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .panel {
@@ -115,6 +118,21 @@ h1 {
   gap: 12px;
 }
 
+#booking-panel .panel-title {
+  font-size: 15px;
+  color: #d6e0f0;
+}
+
+#bookings-panel .panel-title {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+#admin-panel .panel-title {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
 .panel-copy {
   margin: 0 0 16px;
   color: #b8c3d6;
@@ -123,7 +141,7 @@ h1 {
 
 #bookings-panel {
   display: grid;
-  gap: 18px;
+  gap: 20px;
 }
 
 #bookings-panel .panel-copy {
@@ -275,7 +293,7 @@ h1 {
 
 .accordion-summary {
   position: relative;
-  padding: 10px 38px 10px 20px;
+  padding: 12px 38px 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -428,8 +446,8 @@ h1 {
 .field:focus-visible,
 .button:focus-visible,
 .link:focus-visible {
-  outline: 2px solid rgba(111, 214, 255, 0.6);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: var(--ring);
 }
 
 .button {
@@ -480,6 +498,8 @@ h1 {
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .button-row {
@@ -730,7 +750,7 @@ h1 {
 .history {
   border: 1px solid #20283a;
   border-radius: 14px;
-  padding: 12px;
+  padding: 14px;
   background: rgba(9, 13, 22, 0.35);
   display: grid;
   gap: 12px;
@@ -786,10 +806,11 @@ h1 {
   list-style: none;
   cursor: pointer;
   padding: var(--panel-pad);
-  font-size: 14px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.24em;
   color: var(--muted);
+  opacity: 0.7;
 }
 
 .system-summary.accordion-summary {
