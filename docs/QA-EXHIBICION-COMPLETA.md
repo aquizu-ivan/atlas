@@ -186,3 +186,9 @@ Checklist limpieza de ruido:
 1) Hero se siente mas fuerte sin gritar (IAQUIZU + ATLAS).
 2) Flujo principal se percibe primero; secundarios mas calmos.
 3) Acordeones con aire editorial; sin ruido.
+
+## TICKET-34 - Micro-interacciones premium
+1) Hover/active/focus consistente en botones, summaries, slots y cards.
+2) Disabled elegante y legible sin contraste sucio.
+3) Tab visible sin ruido; ring coherente.
+4) Zoom 100% / 125% / 150% sin solapes.
