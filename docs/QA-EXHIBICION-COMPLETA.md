@@ -206,3 +206,9 @@ Checklist limpieza de ruido:
 4) Servicios: crear/editar/activar funciona sin estirar el panel.
 5) Usuarios compacto, fechas en formato dd/mm/aaaa.
 6) Zoom 100% / 125% / 150% sin solapes en Admin.
+
+## TICKET-40 - Layout tokens
+1) No hay cambios visibles drásticos; solo consistencia.
+2) Tokens aplicados en panel/card/control.
+3) Ritmo de secciones consistente (panel-gap/section-gap/card-gap).
+4) Preparado para TICKET-41 (responsive + a11y).
