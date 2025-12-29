@@ -212,3 +212,12 @@ Checklist limpieza de ruido:
 2) Tokens aplicados en panel/card/control.
 3) Ritmo de secciones consistente (panel-gap/section-gap/card-gap).
 4) Preparado para TICKET-41 (responsive + a11y).
+
+## TICKET-41 - Responsive + A11y final
+1) Mobile 360x740 / 390x844 / 430x932: sin overflow X.
+2) Tablet 768: OK.
+3) Desktop 1280+: OK.
+4) Keyboard: orden logico + focus visible siempre.
+5) Screen reader basico: labels presentes.
+6) Zoom 100% / 125% / 150% sin solapes.
+7) Reduced motion verificado.
