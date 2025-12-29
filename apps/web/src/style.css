@@ -1,5 +1,17 @@
 :root {
   color-scheme: dark;
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --container-max: 980px;
+  --container-pad: clamp(18px, 4vw, 28px);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --section-gap: calc(var(--space-5) + var(--space-3));
   --bg: #0b0f14;
   --panel: #121826;
   --panel-2: #0f141f;
@@ -9,14 +21,18 @@
   --ok: #2ee59d;
   --error: #ff6b6b;
   --pending: #ffc857;
-  --panel-pad: 28px;
-  --card-pad: 16px;
-  --stack: 16px;
-  --control-h: 38px;
-  --control-pad-x: 16px;
+  --panel-gap: calc(var(--space-4) + 2px);
+  --card-gap: calc(var(--space-2) + 2px);
+  --panel-pad: calc(var(--space-5) + var(--space-1));
+  --card-pad: var(--space-4);
+  --stack: var(--space-4);
+  --control-h: 44px;
+  --control-pad-x: var(--space-4);
+  --control-pad-y: calc(var(--space-2) + 2px);
   --control-radius: 12px;
-  --control-gap: 10px;
-  --panel-gap: 18px;
+  --radius-panel: 20px;
+  --radius-card: 14px;
+  --control-gap: calc(var(--space-2) + 2px);
   --ease: cubic-bezier(0.18, 0.68, 0.2, 1);
   --t-fast: 120ms;
   --t: 180ms;
@@ -36,22 +52,22 @@ body {
 }
 
 .app {
-  max-width: 980px;
+  max-width: var(--container-max);
   margin: 0 auto;
-  padding: 56px 24px 72px;
+  padding: calc(var(--space-6) + var(--space-5)) var(--container-pad) calc(var(--space-6) + var(--space-5) + var(--space-4));
   display: grid;
-  gap: 36px;
+  gap: var(--section-gap);
 }
 
 .hero {
   display: grid;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 .badge {
   width: fit-content;
-  padding: 6px 14px;
+  padding: calc(var(--space-2) - 2px) calc(var(--space-4) - 2px);
   border: 1px solid #2c3649;
   border-radius: 999px;
   text-transform: uppercase;
@@ -79,7 +95,7 @@ h1 {
 .panel {
   background: linear-gradient(135deg, #121826 0%, #0f141f 100%);
   border: 1px solid #20283a;
-  border-radius: 20px;
+  border-radius: var(--radius-panel);
   padding: var(--panel-pad);
   box-shadow: 0 20px 40px rgba(3, 8, 20, 0.45);
 }
@@ -89,19 +105,19 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 0.24em;
   color: var(--muted);
-  margin: 0 0 20px;
+  margin: 0 0 calc(var(--space-4) + var(--space-1));
 }
 
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .panel-header .panel-title {
-  margin-bottom: 6px;
+  margin-bottom: calc(var(--space-1) + 2px);
 }
 
 .panel-header .panel-copy {
@@ -133,14 +149,14 @@ h1 {
 }
 
 .panel-copy {
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-4);
   color: #b8c3d6;
   font-size: 14px;
 }
 
 #bookings-panel {
   display: grid;
-  gap: 20px;
+  gap: calc(var(--space-4) + var(--space-1));
 }
 
 #bookings-panel .panel-copy {
@@ -150,7 +166,7 @@ h1 {
 .subsection {
   display: grid;
   gap: var(--panel-gap);
-  margin-bottom: 20px;
+  margin-bottom: calc(var(--space-4) + var(--space-1));
 }
 
 .subsection:last-child {
@@ -162,7 +178,7 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 0.2em;
   color: var(--muted);
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 .hint {
@@ -173,9 +189,9 @@ h1 {
 .status {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   font-weight: 600;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-5);
 }
 
 .dot {
@@ -227,7 +243,7 @@ h1 {
 .admin-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 6px 10px;
+  gap: var(--space-2) calc(var(--space-2) + 2px);
 }
 
 .admin-form-span {
@@ -236,11 +252,11 @@ h1 {
 
 .admin-section {
   border: 1px solid #20283a;
-  border-radius: 16px;
-  padding: 8px;
+  border-radius: calc(var(--radius-card) + 2px);
+  padding: var(--space-2);
   background: rgba(9, 13, 22, 0.35);
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .admin-summary {
@@ -261,8 +277,8 @@ h1 {
 }
 
 .admin-card {
-  margin-top: 6px;
-  padding: calc(var(--card-pad) - 6px);
+  margin-top: calc(var(--space-1) + 2px);
+  padding: calc(var(--card-pad) - var(--space-1) - 2px);
   min-height: auto;
 }
 
@@ -284,11 +300,11 @@ h1 {
 .card {
   background: rgba(12, 16, 28, 0.7);
   border: 1px solid #20283a;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   padding: var(--card-pad);
   min-height: 90px;
   display: grid;
-  gap: 10px;
+  gap: var(--card-gap);
 }
 
 .accordion-premium {
@@ -297,13 +313,13 @@ h1 {
 
 .accordion-summary {
   position: relative;
-  padding: 12px 38px 12px 20px;
+  padding: var(--space-3) calc(var(--space-6) + var(--space-1) + 2px) var(--space-3) calc(var(--space-4) + var(--space-1));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: var(--control-radius);
   background: rgba(9, 13, 22, 0.35);
   transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
@@ -311,9 +327,9 @@ h1 {
 .accordion-summary::before {
   content: "";
   position: absolute;
-  left: 10px;
-  top: 8px;
-  bottom: 8px;
+  left: calc(var(--space-2) + 2px);
+  top: var(--space-2);
+  bottom: var(--space-2);
   width: 2px;
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(111, 214, 255, 0.7), rgba(111, 214, 255, 0.08));
@@ -322,7 +338,7 @@ h1 {
 .accordion-summary::after {
   content: "";
   position: absolute;
-  right: 16px;
+  right: var(--space-4);
   top: 50%;
   width: 7px;
   height: 7px;
@@ -358,8 +374,8 @@ h1 {
 
 .accordion-body {
   display: grid;
-  gap: 12px;
-  padding-top: 10px;
+  gap: var(--space-3);
+  padding-top: calc(var(--space-2) + 2px);
   max-height: 1200px;
   opacity: 1;
   transform: translateY(0);
@@ -437,7 +453,7 @@ h1 {
   border: 1px solid #273149;
   background: #0b0f19;
   color: var(--text);
-  padding: 0 var(--control-pad-x);
+  padding: var(--control-pad-y) var(--control-pad-x);
   font-size: 14px;
 }
 
@@ -458,7 +474,7 @@ h1 {
   height: var(--control-h);
   border-radius: var(--control-radius);
   border: none;
-  padding: 0 var(--control-pad-x);
+  padding: var(--control-pad-y) var(--control-pad-x);
   background: var(--accent);
   color: #071018;
   font-weight: 600;
@@ -549,7 +565,7 @@ h1 {
 .slots {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
+  gap: var(--card-gap);
 }
 
 .slots-scroll {
@@ -559,8 +575,8 @@ h1 {
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
   border: 1px solid rgba(32, 40, 58, 0.6);
-  border-radius: 12px;
-  padding: 10px;
+  border-radius: var(--control-radius);
+  padding: var(--card-gap);
 }
 
 .slots-scroll::-webkit-scrollbar {
@@ -579,7 +595,7 @@ h1 {
 .preset-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .preset-button {
@@ -590,25 +606,25 @@ h1 {
 
 .confirm-box {
   display: grid;
-  gap: 6px;
-  padding: 12px;
-  border-radius: 12px;
+  gap: calc(var(--space-1) + 2px);
+  padding: var(--space-3);
+  border-radius: var(--control-radius);
   border: 1px solid rgba(32, 40, 58, 0.7);
   background: rgba(9, 13, 22, 0.6);
 }
 
 .summary-card {
   display: grid;
-  gap: 10px;
-  padding: 14px;
-  border-radius: 14px;
+  gap: var(--card-gap);
+  padding: calc(var(--space-4) - 2px);
+  border-radius: var(--radius-card);
   border: 1px solid rgba(32, 40, 58, 0.7);
   background: rgba(9, 13, 22, 0.65);
 }
 
 .summary-card--compact {
-  padding: 12px;
-  gap: 8px;
+  padding: var(--space-3);
+  gap: var(--space-2);
 }
 
 .summary-title {
@@ -711,7 +727,7 @@ h1 {
 
 .booking-list {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .admin-list {
@@ -740,8 +756,8 @@ h1 {
 }
 
 .admin-item {
-  gap: 6px;
-  padding: 6px 10px;
+  gap: calc(var(--space-1) + 2px);
+  padding: var(--space-2) var(--space-3);
 }
 
 .admin-item-top {
@@ -812,8 +828,8 @@ h1 {
 
 .booking-item {
   display: grid;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-radius: 12px;
   border: 1px solid #212a3c;
   background: rgba(9, 13, 22, 0.6);
@@ -939,7 +955,7 @@ h1 {
 .system-body {
   padding: 0 var(--panel-pad) var(--panel-pad);
   display: grid;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .accordion-premium:not([open]) > .system-body {
@@ -956,14 +972,14 @@ h1 {
 
 .note[data-loading="true"] {
   position: relative;
-  padding-left: 18px;
+  padding-left: calc(var(--space-4) + 2px);
 }
 
 .note[data-loading="true"]::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 6px;
+  top: calc(var(--space-1) + 2px);
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -985,9 +1001,9 @@ h1 {
 
 @media (max-width: 640px) {
   .app {
-    padding: 40px 18px 56px;
+    padding: calc(var(--space-6) + var(--space-2)) calc(var(--space-4) + 2px) calc(var(--space-6) + var(--space-5));
   }
   .panel {
-    padding: 22px;
+    padding: calc(var(--space-4) + var(--space-1) + 2px);
   }
 }
