@@ -17,13 +17,12 @@
   --control-radius: 12px;
   --control-gap: 10px;
   --panel-gap: 18px;
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --t-fast: 140ms;
-  --t: 200ms;
+  --ease: cubic-bezier(0.18, 0.68, 0.2, 1);
+  --t-fast: 120ms;
+  --t: 180ms;
   --hover-lift: 1px;
-  --hover-shadow: 0 12px 20px rgba(5, 10, 22, 0.28);
-  --shadow-hover: 0 16px 26px rgba(5, 10, 22, 0.32);
-  --ring: 0 0 0 2px rgba(111, 214, 255, 0.5);
+  --shadow-hover: 0 10px 18px rgba(5, 10, 22, 0.28);
+  --ring: 0 0 0 2px rgba(111, 214, 255, 0.45);
 }
 
 * { box-sizing: border-box; }
@@ -301,7 +300,7 @@ h1 {
   cursor: pointer;
   border-radius: 12px;
   background: rgba(9, 13, 22, 0.35);
-  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease), color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
 
 .accordion-summary::before {
@@ -312,7 +311,7 @@ h1 {
   bottom: 8px;
   width: 2px;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(111, 214, 255, 0.65), rgba(111, 214, 255, 0.05));
+  background: linear-gradient(180deg, rgba(111, 214, 255, 0.7), rgba(111, 214, 255, 0.08));
 }
 
 .accordion-summary::after {
@@ -325,7 +324,7 @@ h1 {
   border-right: 2px solid #6e7b92;
   border-bottom: 2px solid #6e7b92;
   transform: translateY(-50%) rotate(45deg);
-  transition: transform var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  transition: transform var(--t) var(--ease), border-color var(--t-fast) var(--ease);
 }
 
 .accordion-premium[open] > .accordion-summary::after {
@@ -338,7 +337,7 @@ h1 {
 
 .accordion-summary:hover {
   transform: translateY(calc(-1 * var(--hover-lift)));
-  box-shadow: var(--hover-shadow);
+  box-shadow: var(--shadow-hover);
   color: #cdd8ea;
 }
 
@@ -348,7 +347,7 @@ h1 {
 }
 
 .accordion-summary:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.99);
   box-shadow: none;
 }
 
@@ -459,7 +458,7 @@ h1 {
   color: #071018;
   font-weight: 600;
   cursor: pointer;
-  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease), background var(--t-fast) var(--ease);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
 
 .button.ghost {
@@ -470,11 +469,11 @@ h1 {
 
 .button:hover:not(:disabled) {
   transform: translateY(calc(-1 * var(--hover-lift)));
-  box-shadow: var(--hover-shadow);
+  box-shadow: var(--shadow-hover);
 }
 
 .button:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.99);
   box-shadow: none;
 }
 
@@ -496,7 +495,7 @@ h1 {
 }
 
 .button:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -669,17 +668,17 @@ h1 {
 }
 
 .confirm-actions .button.cta:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 28px rgba(7, 16, 24, 0.4);
+  transform: translateY(calc(-1 * var(--hover-lift)));
+  box-shadow: var(--shadow-hover);
 }
 
 .confirm-actions .button.cta:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.99);
   box-shadow: none;
 }
 
 .confirm-actions .button:disabled {
-  opacity: 0.45;
+  opacity: 0.55;
   box-shadow: none;
 }
 
@@ -688,8 +687,15 @@ h1 {
 }
 
 .slot-button.is-selected {
-  border-color: var(--accent);
-  color: var(--accent);
+  background: rgba(111, 214, 255, 0.14);
+  border-color: rgba(111, 214, 255, 0.6);
+  color: #dff4ff;
+}
+
+.slot-button:not(.is-selected):hover {
+  border-color: rgba(111, 214, 255, 0.35);
+  color: #d6e7f4;
+  box-shadow: var(--shadow-hover);
 }
 
 .booking-list {
@@ -726,13 +732,13 @@ h1 {
   border-radius: 12px;
   border: 1px solid #212a3c;
   background: rgba(9, 13, 22, 0.6);
-  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease), border-color var(--t) var(--ease), background var(--t) var(--ease);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
 
 .booking-item:hover {
   transform: translateY(calc(-1 * var(--hover-lift)));
   border-color: #2b3852;
-  box-shadow: var(--hover-shadow);
+  box-shadow: var(--shadow-hover);
   background: rgba(10, 15, 26, 0.7);
 }
 
