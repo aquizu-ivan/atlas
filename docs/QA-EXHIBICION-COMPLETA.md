@@ -66,12 +66,12 @@ Fallback DEV (cookies bloqueadas):
 12) Estados: PENDING muestra "Pendiente (a confirmar)", CONFIRMED "Confirmada".
 
 ## Admin (Read-only)
-1) Abrir Admin y ver "Acceso restringido".
+1) Abrir Admin y ver "Sin acceso.".
 2) Ingresar ADMIN_ACCESS_TOKEN y "Conectar" -> estado "Conectado".
 3) Agenda: seleccionar fecha -> lista ordenada por hora.
 4) Agenda: si PENDING -> confirmar; si CONFIRMED -> cancelar; CANCELED sin acciones.
 5) Usuarios: lista read-only con email y createdAt.
-6) Token invalido -> 401 y vuelve a "Acceso restringido".
+6) Token invalido -> 401 y vuelve a "Sin acceso.".
 7) Servicios: crear servicio -> aparece en lista Admin y en Reservar (servicios activos).
 8) Servicios: editar nombre/duracion y activar/desactivar reflejado en la lista.
 
@@ -80,7 +80,7 @@ Nota: si los endpoints de servicios/disponibilidad/reservas no existen, la UI mu
 Mensajes esperados:
 - 401: "Necesitas iniciar sesion" + CTA suave a Auth.
 - 409: "Ese horario ya no esta disponible."
-- 5xx/network: "No se pudo conectar" + boton Reintentar.
+- 5xx/network: "No pudimos conectar. Reintenta." + boton Reintentar.
 
 ## QA con curl (CORS)
 Health con Origin:
@@ -192,3 +192,9 @@ Checklist limpieza de ruido:
 2) Disabled elegante y legible sin contraste sucio.
 3) Tab visible sin ruido; ring coherente.
 4) Zoom 100% / 125% / 150% sin solapes.
+
+## TICKET-38 - Copy + estados silenciosos
+1) No hay "Listo" en paneles.
+2) Loading/empty/error/success son humanos y calmados.
+3) 401/409 no muestran jerga tecnica.
+4) Hints solo aparecen cuando faltan datos.

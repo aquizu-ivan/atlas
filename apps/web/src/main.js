@@ -274,7 +274,7 @@ function setBookingsCta(message, showLink) {
     const link = document.createElement("a");
     link.href = "#auth-panel";
     link.className = "link";
-    link.textContent = "Iniciar sesion";
+    link.textContent = "Abrir acceso";
     bookingsCtaEl.append(link);
   }
 }
@@ -353,7 +353,7 @@ function setAdminMode(enabled) {
   setStoredAdminMode(enabled);
   adminBodyEl.hidden = !enabled;
   adminModeToggleBtn.textContent = enabled ? "Desactivar modo admin" : "Activar modo admin";
-  adminModeNoteEl.textContent = enabled ? "Modo admin activo." : "Solo para administracion.";
+  adminModeNoteEl.textContent = enabled ? "Acceso de administracion." : "Solo para administracion.";
 
   if (!enabled) {
     return;
@@ -362,7 +362,7 @@ function setAdminMode(enabled) {
   if (getStoredAdminToken()) {
     setAdminStatus("Conectado.");
     if (adminAccessNoteEl) {
-      adminAccessNoteEl.textContent = "Modo admin activo.";
+      adminAccessNoteEl.textContent = "Acceso de administracion.";
     }
     if (adminPanelsEl) {
       adminPanelsEl.hidden = false;
@@ -371,16 +371,16 @@ function setAdminMode(enabled) {
     loadAdminUsers();
     loadAdminServices();
   } else {
-    setAdminStatus("Acceso restringido.");
+    setAdminStatus("Sin acceso.");
     if (adminAccessNoteEl) {
-      adminAccessNoteEl.textContent = "Solo para administracion.";
+      adminAccessNoteEl.textContent = "Ingresa el token para continuar.";
     }
     if (adminPanelsEl) {
       adminPanelsEl.hidden = true;
     }
-    setAdminAgendaState("Acceso restringido.");
-    setAdminUsersState("Acceso restringido.");
-    setAdminServicesState("Acceso restringido.");
+    setAdminAgendaState("Sin acceso.");
+    setAdminUsersState("Sin acceso.");
+    setAdminServicesState("Sin acceso.");
   }
 }
 
@@ -486,12 +486,12 @@ function formatStatus(status) {
 
 function describeError(response, data) {
   if (!response) {
-    return "No se pudo conectar";
+    return "No pudimos conectar. Reintenta.";
   }
   if (response.status === 400) {
     const detail = data?.error?.message;
     if (!detail) {
-      return "Datos invalidos";
+      return "Datos invalidos.";
     }
     const humanDetail = String(detail)
       .replace("StartAt outside availability", "Horario fuera de disponibilidad")
@@ -502,18 +502,18 @@ function describeError(response, data) {
     return `Datos invalidos: ${humanDetail}`;
   }
   if (response.status === 401) {
-    return "Necesitas iniciar sesion";
+    return "Necesitas iniciar sesion.";
   }
   if (response.status === 404) {
-    return "Not found";
+    return "No disponible.";
   }
   if (response.status === 409) {
-    return "Ese horario ya no esta disponible.";
+    return "Ese horario ya no esta disponible. Actualiza horarios.";
   }
   if (response.status >= 500) {
-    return "No se pudo conectar";
+    return "No pudimos conectar. Reintenta.";
   }
-  return data?.error?.message || "Request error";
+  return data?.error?.message || "No pudimos completar.";
 }
 
 function formatSlotLabel(iso) {
@@ -565,7 +565,7 @@ async function adminUpdateBooking(bookingId, action) {
   const path = action === "confirm"
     ? `/admin/bookings/${bookingId}/confirm`
     : `/admin/bookings/${bookingId}/cancel`;
-  setAdminAgendaState(action === "confirm" ? "Confirmando..." : "Cancelando...");
+  setAdminAgendaState(action === "confirm" ? "Confirmando" : "Cancelando");
   setNoteLoading(adminAgendaStateEl, true);
   try {
     const response = await adminFetch(`${apiBaseUrl}${path}`, {
@@ -574,8 +574,11 @@ async function adminUpdateBooking(bookingId, action) {
     const data = await response.json().catch(() => null);
     if (response.status === 401) {
       setStoredAdminToken("");
-      setAdminStatus("Acceso restringido.");
-      setAdminAgendaState("Acceso restringido.");
+      setAdminStatus("Sin acceso.");
+      setAdminAgendaState("Sin acceso.");
+      if (adminAccessNoteEl) {
+        adminAccessNoteEl.textContent = "Acceso no valido. Revisa el token.";
+      }
       return;
     }
     if (response.status === 404) {
@@ -583,17 +586,17 @@ async function adminUpdateBooking(bookingId, action) {
       return;
     }
     if (response.status === 409) {
-      setAdminAgendaState(data?.error?.message || "No se pudo actualizar.");
+      setAdminAgendaState(data?.error?.message || "No pudimos actualizar.");
       return;
     }
     if (!response.ok || !data || !data.ok) {
-      setAdminAgendaState("No se pudo actualizar.");
+      setAdminAgendaState("No pudimos actualizar.");
       return;
     }
     setAdminAgendaState(action === "confirm" ? "Reserva confirmada." : "Reserva cancelada.");
     await loadAdminAgenda();
   } catch {
-    setAdminAgendaState("No se pudo conectar.");
+    setAdminAgendaState("No pudimos conectar. Reintenta.");
   } finally {
     setNoteLoading(adminAgendaStateEl, false);
   }
@@ -772,7 +775,7 @@ async function requestLink() {
   authRequestBtn.disabled = true;
   setBusy(authPanel, true);
   setNoteLoading(authMessageEl, true);
-  setAuthMessage("Enviando link...");
+  setAuthMessage("Enviando link");
   devLink = null;
   setDevLinkState(null);
 
@@ -791,8 +794,8 @@ async function requestLink() {
       return;
     }
 
-    setAuthMessage("Revisa tu email y abre el link para iniciar sesion.");
-    setHelperMessage("El link llega por email. Abrelo para iniciar sesion.");
+    setAuthMessage("Te enviamos un link.");
+    setHelperMessage("Revisa tu correo y abri el link.");
     devLink = data?.data?.devLink
       || data?.data?.dev_link
       || data?.devLink
@@ -823,12 +826,12 @@ async function copyDevLink() {
       authDevLinkInput.focus();
       authDevLinkInput.select();
       const copied = document.execCommand("copy");
-      setAuthMessage(copied ? "Link copiado." : "No se pudo copiar.");
+      setAuthMessage(copied ? "Link copiado." : "No pudimos copiar.");
       return;
     }
-    setAuthMessage("No se pudo copiar.");
+    setAuthMessage("No pudimos copiar.");
   } catch {
-    setAuthMessage("No se pudo copiar.");
+    setAuthMessage("No pudimos copiar.");
   }
 }
 
@@ -837,7 +840,7 @@ function openDevLink() {
     setAuthMessage("Dev link no disponible");
     return;
   }
-  setAuthMessage("Abriendo link...");
+  setAuthMessage("Abriendo link");
   window.location.assign(devLink);
 }
 
@@ -845,7 +848,7 @@ async function refreshSession() {
   authRefreshBtn.disabled = true;
   setBusy(authPanel, true);
   setNoteLoading(authMessageEl, true);
-  setAuthMessage("Verificando sesion...");
+  setAuthMessage("Actualizando sesion");
 
   try {
     const response = await authFetch(`${authBaseUrl}/session`);
@@ -853,14 +856,14 @@ async function refreshSession() {
 
     if (response.ok && data && data.ok) {
       setSessionState(true, data.data?.user?.email);
-      setAuthMessage("Sesion activa");
+      setAuthMessage("Sesion activa.");
       return;
     }
 
     if (response.status === 401) {
       setStoredDevToken("");
       setSessionState(false, null);
-      setAuthMessage("Necesitas iniciar sesion");
+      setAuthMessage("Necesitas iniciar sesion.");
       return;
     }
 
@@ -879,7 +882,7 @@ async function logout() {
   authLogoutBtn.disabled = true;
   setBusy(authPanel, true);
   setNoteLoading(authMessageEl, true);
-  setAuthMessage("Cerrando sesion...");
+  setAuthMessage("Cerrando sesion");
 
   try {
     const response = await authFetch(`${authBaseUrl}/logout`, {
@@ -890,14 +893,14 @@ async function logout() {
     if (response.ok && data && data.ok) {
       setStoredDevToken("");
       setSessionState(false, null);
-      setAuthMessage(data.data?.message || "Sesion cerrada");
+      setAuthMessage(data.data?.message || "Sesion cerrada.");
       return;
     }
 
     if (response.status === 401) {
       setStoredDevToken("");
       setSessionState(false, null);
-      setAuthMessage("Necesitas iniciar sesion");
+      setAuthMessage("Necesitas iniciar sesion.");
       return;
     }
 
@@ -915,7 +918,7 @@ async function logout() {
 async function loadServices() {
   setBusy(bookingPanel, true);
   setNoteLoading(servicesStateEl, true);
-  setServicesState("Cargando...");
+  setServicesState("Cargando servicios");
   setServicesHint("");
   servicesSelectEl.disabled = true;
   servicesSelectEl.innerHTML = "<option value=\"\">Selecciona un servicio</option>";
@@ -937,12 +940,12 @@ async function loadServices() {
     const data = await response.json().catch(() => null);
 
     if (response.status === 404) {
-      setServicesState("Not available yet");
+      setServicesState("Servicios no disponibles.");
       setServicesHint("");
       return;
     }
     if (!response.ok) {
-      setServicesState("No se pudo conectar");
+      setServicesState("No pudimos conectar. Reintenta.");
       setServicesHint("");
       toggleRetry(servicesRetryBtn, true);
       return;
@@ -950,7 +953,7 @@ async function loadServices() {
 
     const services = parseServicesPayload(data);
     if (!Array.isArray(services) || services.length === 0) {
-      setServicesState("Sin resultados");
+      setServicesState("Sin servicios disponibles.");
       setServicesHint("");
       return;
     }
@@ -987,7 +990,7 @@ async function loadServices() {
     updateServiceSummary();
     updateBookingSummary();
   } catch {
-    setServicesState("No se pudo conectar");
+    setServicesState("No pudimos conectar. Reintenta.");
     setServicesHint("");
     toggleRetry(servicesRetryBtn, true);
   } finally {
@@ -999,7 +1002,7 @@ async function loadServices() {
 function clearAvailability() {
   availabilitySlotsEl.innerHTML = "";
   const hasSelection = Boolean(selectedServiceId && bookingDateEl.value);
-  setAvailabilityState(hasSelection ? "" : "Selecciona servicio y fecha");
+  setAvailabilityState(hasSelection ? "" : "Elegi servicio y fecha");
   setBookingMessage("");
   setBookingConfirmation("");
   selectedSlot = "";
@@ -1077,7 +1080,7 @@ function startReschedule(booking) {
   clearAvailability();
   updateBookingSummary();
   updateBookingQuery();
-  setBookingMessage("Selecciona un nuevo horario para reprogramar.");
+  setBookingMessage("Elegi un nuevo horario para reprogramar.");
   setConfirmLabel();
   loadAvailability();
   const bookingPanel = document.getElementById("booking-panel");
@@ -1097,13 +1100,13 @@ async function loadAvailability() {
   const date = bookingDateEl.value;
   selectedDate = date;
   if (!selectedServiceId || !selectedDate) {
-    setAvailabilityState("Selecciona servicio y fecha");
+    setAvailabilityState("Elegi servicio y fecha");
     availabilitySlotsEl.innerHTML = "";
     setNoteLoading(availabilityStateEl, false);
     return;
   }
 
-  setAvailabilityState("Cargando...");
+  setAvailabilityState("Buscando horarios");
   setNoteLoading(availabilityStateEl, true);
   setBookingMessage("");
   setBookingConfirmation("");
@@ -1123,12 +1126,11 @@ async function loadAvailability() {
     const data = await response.json().catch(() => null);
 
     if (response.status === 404) {
-      setAvailabilityState("Not available yet");
+      setAvailabilityState("Horarios no disponibles.");
       return;
     }
     if (!response.ok) {
-      const message = describeError(response, data);
-      setAvailabilityState(message);
+      setAvailabilityState("No pudimos conectar. Reintenta.");
       if (response.status >= 500) {
         toggleRetry(availabilityRetryBtn, true);
       }
@@ -1137,7 +1139,7 @@ async function loadAvailability() {
 
     const slots = parseSlotsPayload(data);
     if (!Array.isArray(slots) || slots.length === 0) {
-      setAvailabilityState("Sin resultados");
+      setAvailabilityState("No hay horarios para esta fecha. Proba otro dia.");
       return;
     }
 
@@ -1152,7 +1154,7 @@ async function loadAvailability() {
       availabilitySlotsEl.append(button);
     }
   } catch {
-    setAvailabilityState("No se pudo conectar");
+    setAvailabilityState("No pudimos conectar. Reintenta.");
     toggleRetry(availabilityRetryBtn, true);
   } finally {
     setNoteLoading(availabilityStateEl, false);
@@ -1161,7 +1163,7 @@ async function loadAvailability() {
 
 function ensureBookingGuidance() {
   const current = bookingMessageEl.textContent.trim();
-  if (current && !current.startsWith("Selecciona")) {
+  if (current && !current.startsWith("Elegi")) {
     return;
   }
   if (!selectedServiceId || !selectedDate) {
@@ -1170,8 +1172,8 @@ function ensureBookingGuidance() {
   }
   if (!selectedSlot) {
     setBookingMessage(rescheduleContext
-      ? "Selecciona un nuevo horario para reprogramar."
-      : "Selecciona un horario para continuar.");
+      ? "Elegi un nuevo horario para reprogramar."
+      : "Elegi un horario para continuar.");
     return;
   }
   setBookingMessage("");
@@ -1200,7 +1202,7 @@ function selectSlot(startAt, button) {
 
 async function createBooking() {
   if (!selectedServiceId || !selectedSlot) {
-    setBookingMessage("Datos invalidos");
+    setBookingMessage("Datos invalidos.");
     return;
   }
 
@@ -1209,12 +1211,12 @@ async function createBooking() {
     const original = rescheduleContext.startAt;
     const next = normalizeIso(selectedSlot);
     if (original && next && original === next) {
-      setBookingMessage("Elige un horario distinto.");
+      setBookingMessage("Elegi un horario distinto.");
       return;
     }
   }
 
-  setBookingMessage(isReschedule ? "Reprogramando..." : "Reservando...");
+  setBookingMessage(isReschedule ? "Reprogramando" : "Reservando");
   setNoteLoading(bookingMessageEl, true);
   setBookingConfirmation("");
   const buttons = availabilitySlotsEl.querySelectorAll("button");
@@ -1234,15 +1236,15 @@ async function createBooking() {
     const data = await response.json().catch(() => null);
 
     if (response.status === 401) {
-      setBookingMessage("Necesitas iniciar sesion. Usa el panel de acceso.");
+      setBookingMessage("Necesitas iniciar sesion para confirmar.");
       return;
     }
     if (response.status === 409) {
-      setBookingMessage("Ese horario ya no esta disponible.");
+      setBookingMessage("Ese horario ya no esta disponible. Actualiza horarios.");
       return;
     }
     if (response.status === 404) {
-      setBookingMessage("Not available yet");
+      setBookingMessage("No pudimos confirmar.");
       return;
     }
     if (!response.ok || !data || !data.ok) {
@@ -1252,7 +1254,7 @@ async function createBooking() {
     }
 
     if (isReschedule) {
-      setBookingMessage("Procesando reprogramacion...");
+      setBookingMessage("Reprogramacion lista.");
     } else {
       setBookingMessage("Reserva creada.");
     }
@@ -1298,19 +1300,19 @@ async function createBooking() {
       if (booking?.id) {
         await authFetch(apiEndpoint(`/bookings/${booking.id}/cancel`), { method: "POST" });
       }
-      setBookingMessage("No pudimos reprogramar. Intenta de nuevo.");
+      setBookingMessage("No pudimos reprogramar. Reintenta.");
       setBookingConfirmation("");
       return;
     }
 
-    setBookingMessage("Reserva reprogramada.");
+    setBookingMessage("Reprogramacion lista.");
     resetReschedule();
     await loadBookings();
     await loadAvailability();
     selectedSlot = "";
     bookingConfirmBtn.disabled = true;
   } catch {
-    setBookingMessage("No se pudo conectar");
+    setBookingMessage("No pudimos conectar. Reintenta.");
   } finally {
     buttons.forEach((button) => { button.disabled = false; });
     setButtonLoading(bookingConfirmBtn, false);
@@ -1323,10 +1325,10 @@ async function loadBookings() {
   setBusy(bookingsPanel, true);
   setNoteLoading(bookingsStateEl, true);
   setNoteLoading(bookingsHistoryStateEl, true);
-  setBookingsState("Cargando...");
+  setBookingsState("Actualizando reservas");
   bookingsActiveListEl.innerHTML = "";
   bookingsHistoryListEl.innerHTML = "";
-  setBookingsHistoryState("Cargando...");
+  setBookingsHistoryState("Actualizando historial");
   setBookingsCta(null, false);
   updateBookingSummaries(0, 0);
   toggleRetry(bookingsRetryBtn, false);
@@ -1336,16 +1338,16 @@ async function loadBookings() {
     const data = await response.json().catch(() => null);
 
     if (response.status === 401) {
-      setBookingsState("Necesitas iniciar sesion");
-      setBookingsCta("Para ver tus reservas,", true);
-      setBookingsHistoryState("Acceso restringido.");
+      setBookingsState("Necesitas iniciar sesion para ver tus reservas.");
+      setBookingsCta("", true);
+      setBookingsHistoryState("Sin acceso.");
       updateBookingSummaries(0, 0);
       toggleRetry(bookingsRetryBtn, true);
       return;
     }
     if (response.status === 404) {
-      setBookingsState("Not available yet");
-      setBookingsHistoryState("Not available yet");
+      setBookingsState("Reservas no disponibles.");
+      setBookingsHistoryState("Reservas no disponibles.");
       updateBookingSummaries(0, 0);
       return;
     }
@@ -1361,8 +1363,8 @@ async function loadBookings() {
 
     const bookings = parseBookingsPayload(data);
     if (!Array.isArray(bookings) || bookings.length === 0) {
-      setBookingsState("Sin resultados");
-      setBookingsHistoryState("Sin resultados");
+      setBookingsState("Aun no hay reservas activas.");
+      setBookingsHistoryState("Historial vacio.");
       setBookingsCta("Crea tu primera reserva.", false);
       updateBookingSummaries(0, 0);
       return;
@@ -1370,8 +1372,8 @@ async function loadBookings() {
 
     const active = bookings.filter((booking) => booking.status !== "CANCELED");
     const history = bookings.filter((booking) => booking.status === "CANCELED");
-    setBookingsState(active.length ? "" : "Sin resultados");
-    setBookingsHistoryState(history.length ? "" : "Sin resultados");
+    setBookingsState(active.length ? "" : "Aun no hay reservas activas.");
+    setBookingsHistoryState(history.length ? "" : "Historial vacio.");
     updateBookingSummaries(active.length, history.length);
 
     for (const booking of active) {
@@ -1430,8 +1432,8 @@ async function loadBookings() {
       bookingsHistoryListEl.append(item);
     }
   } catch {
-    setBookingsState("No se pudo conectar");
-    setBookingsHistoryState("No se pudo conectar");
+    setBookingsState("No pudimos conectar. Reintenta.");
+    setBookingsHistoryState("No pudimos conectar. Reintenta.");
     toggleRetry(bookingsRetryBtn, true);
   } finally {
     setNoteLoading(bookingsStateEl, false);
@@ -1446,7 +1448,7 @@ async function cancelBooking(bookingId) {
     return;
   }
 
-  setBookingsState("Cancelando...");
+  setBookingsState("Cancelando");
   setNoteLoading(bookingsStateEl, true);
   setBookingsCta(null, false);
   toggleRetry(bookingsRetryBtn, false);
@@ -1457,13 +1459,13 @@ async function cancelBooking(bookingId) {
     const data = await response.json().catch(() => null);
 
     if (response.status === 401) {
-      setBookingsState("Necesitas iniciar sesion");
-      setBookingsCta("Para cancelar,", true);
+      setBookingsState("Necesitas iniciar sesion para cancelar.");
+      setBookingsCta("", true);
       toggleRetry(bookingsRetryBtn, true);
       return;
     }
     if (response.status === 404) {
-      setBookingsState("Not found");
+      setBookingsState("No pudimos cancelar.");
       return;
     }
     if (!response.ok || !data || !data.ok) {
@@ -1474,10 +1476,10 @@ async function cancelBooking(bookingId) {
       return;
     }
 
-    setBookingsState("Reserva cancelada");
+    setBookingsState("Reserva cancelada.");
     await loadBookings();
   } catch {
-    setBookingsState("No se pudo conectar");
+    setBookingsState("No pudimos conectar. Reintenta.");
     toggleRetry(bookingsRetryBtn, true);
   } finally {
     setNoteLoading(bookingsStateEl, false);
@@ -1490,7 +1492,7 @@ async function loadAdminAgenda() {
   adminAgendaListEl.innerHTML = "";
   toggleRetry(adminAgendaRetryBtn, false);
   if (!getStoredAdminToken()) {
-    setAdminAgendaState("Acceso restringido.");
+    setAdminAgendaState("Sin acceso.");
     if (adminPanelsEl) {
       adminPanelsEl.hidden = true;
     }
@@ -1507,17 +1509,17 @@ async function loadAdminAgenda() {
     setBusy(adminPanel, false);
     return;
   }
-  setAdminAgendaState("Cargando...");
+  setAdminAgendaState("Actualizando agenda");
   try {
     const response = await adminFetch(`${apiBaseUrl}/admin/agenda?date=${date}`);
     const data = await response.json().catch(() => null);
     if (response.status === 401) {
       setStoredAdminToken("");
-      setAdminStatus("Acceso restringido.");
-      setAdminAgendaState("Acceso restringido.");
+      setAdminStatus("Sin acceso.");
+      setAdminAgendaState("Sin acceso.");
       updateAdminSummaries("agenda", 0);
       if (adminAccessNoteEl) {
-        adminAccessNoteEl.textContent = "Solo para administracion.";
+        adminAccessNoteEl.textContent = "Acceso no valido. Revisa el token.";
       }
       if (adminPanelsEl) {
         adminPanelsEl.hidden = true;
@@ -1526,7 +1528,7 @@ async function loadAdminAgenda() {
       return;
     }
     if (!response.ok || !data || !data.ok) {
-      setAdminAgendaState("No se pudo conectar");
+      setAdminAgendaState("No pudimos conectar. Reintenta.");
       updateAdminSummaries("agenda", 0);
       toggleRetry(adminAgendaRetryBtn, true);
       return;
@@ -1573,7 +1575,7 @@ async function loadAdminAgenda() {
       adminAgendaListEl.append(item);
     }
   } catch {
-    setAdminAgendaState("No se pudo conectar");
+    setAdminAgendaState("No pudimos conectar. Reintenta.");
     toggleRetry(adminAgendaRetryBtn, true);
   } finally {
     setNoteLoading(adminAgendaStateEl, false);
@@ -1587,7 +1589,7 @@ async function loadAdminUsers() {
   adminUsersListEl.innerHTML = "";
   toggleRetry(adminUsersRetryBtn, false);
   if (!getStoredAdminToken()) {
-    setAdminUsersState("Acceso restringido.");
+    setAdminUsersState("Sin acceso.");
     if (adminPanelsEl) {
       adminPanelsEl.hidden = true;
     }
@@ -1596,17 +1598,17 @@ async function loadAdminUsers() {
     setBusy(adminPanel, false);
     return;
   }
-  setAdminUsersState("Cargando...");
+  setAdminUsersState("Actualizando usuarios");
   try {
     const response = await adminFetch(`${apiBaseUrl}/admin/users`);
     const data = await response.json().catch(() => null);
     if (response.status === 401) {
       setStoredAdminToken("");
-      setAdminStatus("Acceso restringido.");
-      setAdminUsersState("Acceso restringido.");
+      setAdminStatus("Sin acceso.");
+      setAdminUsersState("Sin acceso.");
       updateAdminSummaries("users", 0);
       if (adminAccessNoteEl) {
-        adminAccessNoteEl.textContent = "Solo para administracion.";
+        adminAccessNoteEl.textContent = "Acceso no valido. Revisa el token.";
       }
       if (adminPanelsEl) {
         adminPanelsEl.hidden = true;
@@ -1615,7 +1617,7 @@ async function loadAdminUsers() {
       return;
     }
     if (!response.ok || !data || !data.ok) {
-      setAdminUsersState("No se pudo conectar");
+      setAdminUsersState("No pudimos conectar. Reintenta.");
       updateAdminSummaries("users", 0);
       toggleRetry(adminUsersRetryBtn, true);
       return;
@@ -1643,7 +1645,7 @@ async function loadAdminUsers() {
       adminUsersListEl.append(item);
     }
   } catch {
-    setAdminUsersState("No se pudo conectar");
+    setAdminUsersState("No pudimos conectar. Reintenta.");
     toggleRetry(adminUsersRetryBtn, true);
   } finally {
     setNoteLoading(adminUsersStateEl, false);
@@ -1696,7 +1698,7 @@ async function loadAdminServices() {
   adminServicesListEl.innerHTML = "";
   toggleRetry(adminServicesRetryBtn, false);
   if (!getStoredAdminToken()) {
-    setAdminServicesState("Acceso restringido.");
+    setAdminServicesState("Sin acceso.");
     if (adminPanelsEl) {
       adminPanelsEl.hidden = true;
     }
@@ -1705,17 +1707,17 @@ async function loadAdminServices() {
     setBusy(adminPanel, false);
     return;
   }
-  setAdminServicesState("Cargando...");
+  setAdminServicesState("Actualizando servicios");
   try {
     const response = await adminFetch(`${apiBaseUrl}/admin/services`);
     const data = await response.json().catch(() => null);
     if (response.status === 401) {
       setStoredAdminToken("");
-      setAdminStatus("Acceso restringido.");
-      setAdminServicesState("Acceso restringido.");
+      setAdminStatus("Sin acceso.");
+      setAdminServicesState("Sin acceso.");
       updateAdminSummaries("services", 0);
       if (adminAccessNoteEl) {
-        adminAccessNoteEl.textContent = "Solo para administracion.";
+        adminAccessNoteEl.textContent = "Acceso no valido. Revisa el token.";
       }
       if (adminPanelsEl) {
         adminPanelsEl.hidden = true;
@@ -1724,7 +1726,7 @@ async function loadAdminServices() {
       return;
     }
     if (!response.ok || !data || !data.ok) {
-      setAdminServicesState("No se pudo conectar");
+      setAdminServicesState("No pudimos conectar. Reintenta.");
       updateAdminSummaries("services", 0);
       toggleRetry(adminServicesRetryBtn, true);
       return;
@@ -1768,7 +1770,7 @@ async function loadAdminServices() {
       toggleBtn.textContent = service.isActive ? "Desactivar" : "Activar";
       toggleBtn.addEventListener("click", async () => {
         toggleBtn.disabled = true;
-        setAdminServicesMessage("Actualizando estado...");
+        setAdminServicesMessage("Actualizando estado");
         try {
           const response = await adminFetch(`${apiBaseUrl}/admin/services/${service.id}`, {
             method: "PATCH",
@@ -1777,14 +1779,14 @@ async function loadAdminServices() {
           });
           const data = await response.json().catch(() => null);
           if (!response.ok || !data || !data.ok) {
-            setAdminServicesMessage("No se pudo actualizar.");
+            setAdminServicesMessage("No pudimos actualizar.");
           } else {
             setAdminServicesMessage("Estado actualizado.");
             await loadAdminServices();
             await loadServices();
           }
         } catch {
-          setAdminServicesMessage("No se pudo conectar.");
+          setAdminServicesMessage("No pudimos conectar. Reintenta.");
         } finally {
           toggleBtn.disabled = false;
         }
@@ -1795,7 +1797,7 @@ async function loadAdminServices() {
       adminServicesListEl.append(item);
     }
   } catch {
-    setAdminServicesState("No se pudo conectar");
+    setAdminServicesState("No pudimos conectar. Reintenta.");
     toggleRetry(adminServicesRetryBtn, true);
   } finally {
     setNoteLoading(adminServicesStateEl, false);
@@ -1805,7 +1807,7 @@ async function loadAdminServices() {
 
 async function saveAdminService() {
   if (!getStoredAdminToken()) {
-    setAdminServicesMessage("Acceso restringido.");
+    setAdminServicesMessage("Sin acceso.");
     if (adminPanelsEl) {
       adminPanelsEl.hidden = true;
     }
@@ -1825,7 +1827,7 @@ async function saveAdminService() {
   }
 
   setButtonLoading(adminServiceSaveBtn, true);
-  setAdminServicesMessage(adminServiceEditingId ? "Guardando cambios..." : "Creando servicio...");
+  setAdminServicesMessage(adminServiceEditingId ? "Guardando cambios" : "Creando servicio");
   setNoteLoading(adminServicesMessageEl, true);
 
   try {
@@ -1846,8 +1848,8 @@ async function saveAdminService() {
     const data = await response.json().catch(() => null);
     if (response.status === 401) {
       setStoredAdminToken("");
-      setAdminStatus("Acceso restringido.");
-      setAdminServicesMessage("Acceso restringido.");
+      setAdminStatus("Sin acceso.");
+      setAdminServicesMessage("Sin acceso.");
       return;
     }
     if (response.status === 409) {
@@ -1855,7 +1857,7 @@ async function saveAdminService() {
       return;
     }
     if (!response.ok || !data || !data.ok) {
-      setAdminServicesMessage("No se pudo guardar.");
+      setAdminServicesMessage("No pudimos guardar.");
       return;
     }
     setAdminServicesMessage(adminServiceEditingId ? "Servicio actualizado." : "Servicio creado.");
@@ -1863,7 +1865,7 @@ async function saveAdminService() {
     await loadAdminServices();
     await loadServices();
   } catch {
-    setAdminServicesMessage("No se pudo conectar.");
+    setAdminServicesMessage("No pudimos conectar. Reintenta.");
   } finally {
     setButtonLoading(adminServiceSaveBtn, false);
     setNoteLoading(adminServicesMessageEl, false);
@@ -1873,9 +1875,9 @@ async function saveAdminService() {
 function connectAdmin() {
   const token = (adminTokenInput.value || "").trim();
   if (!token) {
-    setAdminStatus("Acceso restringido.");
+    setAdminStatus("Sin acceso.");
     if (adminAccessNoteEl) {
-      adminAccessNoteEl.textContent = "Solo para administracion.";
+      adminAccessNoteEl.textContent = "Ingresa el token para continuar.";
     }
     if (adminPanelsEl) {
       adminPanelsEl.hidden = true;
@@ -2006,8 +2008,8 @@ setDevLinkState(null);
 clearAvailability();
 updateServiceHint();
 updateServiceSummary();
-setServicesState("Cargando...");
-setBookingsState("Cargando...");
+setServicesState("Cargando servicios");
+setBookingsState("Actualizando reservas");
 setConfirmLabel();
 resetAdminServiceForm();
 
