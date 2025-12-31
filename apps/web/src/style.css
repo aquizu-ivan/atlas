@@ -1015,6 +1015,38 @@ h1 {
   font-size: 13px;
 }
 
+.footer--editorial {
+  padding: 24px 0 30px;
+  text-align: center;
+  max-width: 980px;
+  margin: 0 auto;
+  font-size: 0.85em;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.footer--editorial::before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  max-width: 980px;
+  margin: 0 auto 20px;
+}
+
+@media (min-width: 1024px) {
+  .footer--editorial {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 1023px) {
+  .footer--editorial {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
 @media (max-width: 480px) {
   .app {
     padding: calc(var(--space-6) + var(--space-2)) var(--container-pad) calc(var(--space-6) + var(--space-5));
